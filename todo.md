@@ -1,0 +1,13 @@
+- [ ] Tab selection + dragging
+- [ ] Better timing on image scraping, throw away result if tab changes
+- [ ] Naming / saving windows
+- [ ] Refactor / clean up
+- [ ] Text scraping
+- [ ] Search index
+- [ ] Preview extractor, ui
+- [ ] Search store / revive
+- [ ] Search UI (two types?)
+- [ ] Settings Panel
+- [ ] Hot startup
+- [ ] Performance
+- [ ] Accounts / licenses

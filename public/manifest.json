@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
 
-  "name": "Chrome Extension TypeScript Starter",
+  "name": "Warpspace Grind",
   "description": "Chrome Extension, TypeScript, Visual Studio Code",
   "version": "1.0",
 
@@ -14,10 +14,24 @@
     "default_popup": "popup.html"
   },
 
+  "commands": {
+    "enter-warpspace": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+6",
+        "mac": "Command+Shift+5"
+      },
+      "description": "Enter Warpspace",
+      "global": true
+    }
+  },
+
   "content_scripts": [
       {
+        "all_frames": false,
           "matches": ["<all_urls>"],
-          "js": ["js/vendor.js", "js/content_script.js"]
+          "run_at": "document_start",
+          "js": ["js/vendor.js", "js/content_script.js"],
+          "css": ["content.css"]
       }
   ],
 
@@ -26,10 +40,17 @@
   },
 
   "permissions": [
-    "storage"
+    "history",
+    "storage",
+    "scripting"
   ],
 
   "host_permissions": [
     "<all_urls>"
-  ]
+  ],
+
+  "web_accessible_resources": [{
+    "resources": ["app.html"],
+    "matches": ["<all_urls>"]
+  }]
 }

@@ -5,6 +5,7 @@ const srcDir = path.join(__dirname, "..", "src");
 
 module.exports = {
     entry: {
+      app: path.join(srcDir, 'app.tsx'),
       popup: path.join(srcDir, 'popup.tsx'),
       options: path.join(srcDir, 'options.tsx'),
       background: path.join(srcDir, 'background.ts'),
@@ -28,6 +29,27 @@ module.exports = {
                 test: /\.tsx?$/,
                 use: "ts-loader",
                 exclude: /node_modules/,
+            },
+            {
+              test: /\.css$/i,
+              exclude: /node_modules/,
+              use: ['style-loader', 'css-loader', 'postcss-loader'],
+            },
+            {
+              test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+              use: [
+                {
+                  loader: 'file-loader',
+                  options: {
+                    name: '[name].[ext]',
+                    outputPath: 'fonts/'
+                  }
+                }
+              ]
+            },
+            {
+              test: /\.(png|svg|jpg|jpeg|gif)$/i,
+              type: 'asset/resource',
             },
         ],
     },

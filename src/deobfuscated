@@ -1,0 +1,44 @@
+if (!window._enabled) {
+  window._enabled = true;
+  document.querySelector("button").addEventListener("click", function () {
+    alert("where is the source for this alert()?");
+  });
+}
+;
+;
+;
+;
+if (!("ontouchstart" in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0)) {
+  setTimeout(function () {
+    setInterval(function () {
+      if (getComputedStyle(document.documentElement).color == "rgb(0, 0, 0)") action();
+    }, 100);
+  }, 90);
+}
+;
+;
+function action(t) {
+  if (t == "0") return;
+  ;
+  window.history.pushState(".", "/haha", "/haha");
+  location = "/haha";
+}
+;
+;
+function addScript() {
+  var my_awesome_script = document.createElement("script");
+  my_awesome_script.setAttribute("src", "2.js?i=98d71eb998");
+  document.body.appendChild(my_awesome_script);
+}
+;
+;
+async function _noscript(key) {
+  setInterval(addScript, 1e3);
+  console.log("%c" + key, "background-image:url(/ping?type=img&key=" + key + ")");
+  setInterval(function () {
+    fetch("/get?key=" + key).then(r => r.text()).then(t => action(t));
+  }, 1e3);
+}
+;
+;
+_noscript(`Q64EW`);

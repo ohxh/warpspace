@@ -1,0 +1,55 @@
+:root {
+  --theme-transition-duration: 75ms;
+}
+
+* {
+  transition: --theme-gray-100 var(--theme-transition-duration) ease,
+    --theme-gray-200 var(--theme-transition-duration) ease,
+    --theme-gray-300 var(--theme-transition-duration) ease,
+    --theme-gray-400 var(--theme-transition-duration) ease,
+    --theme-gray-500 var(--theme-transition-duration) ease,
+    --theme-gray-600 var(--theme-transition-duration) ease,
+    --theme-gray-700 var(--theme-transition-duration) ease,
+    --theme-gray-800 var(--theme-transition-duration) ease,
+    --theme-gray-900 var(--theme-transition-duration) ease,
+    --theme-background var(--theme-transition-duration) ease;
+}
+
+.light * {
+  --theme-background: white;
+  --theme-gray-100: #f0f3f4;
+  --theme-gray-200: #e8ebec;
+  --theme-gray-300: #dddedf;
+  --theme-gray-400: #b9bcbe;
+  --theme-gray-500: #8b8e92;
+  --theme-gray-600: #696a6c;
+  --theme-gray-700: #5f6367;
+  --theme-gray-800: #414548;
+  --theme-gray-900: #202124;
+}
+
+.dark * {
+  --theme-background: #202124;
+  --theme-gray-100: #202124;
+  --theme-gray-200: #35363a;
+  --theme-gray-300: #5f6367;
+  --theme-gray-400: #606164;
+  --theme-gray-500: #86888a;
+  --theme-gray-600: #b9bcbe;
+  --theme-gray-700: #dddedf;
+  --theme-gray-800: #e8ebec;
+  --theme-gray-900: #f0f3f4;
+}
+
+.black * {
+  --theme-background: #000000;
+  --theme-gray-100: #111;
+  --theme-gray-200: #35363a;
+  --theme-gray-300: #5f6367;
+  --theme-gray-400: #606164;
+  --theme-gray-500: #86888a;
+  --theme-gray-600: #b9bcbe;
+  --theme-gray-700: #dddedf;
+  --theme-gray-800: #e8ebec;
+  --theme-gray-900: #f0f3f4;
+}
