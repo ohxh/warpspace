@@ -1,22 +1,10 @@
-:root {
-  --theme-transition-duration: 75ms;
+.theme {
+  --tw-ring-offset-color: var(--theme-background);
 }
 
-* {
-  transition: --theme-gray-100 var(--theme-transition-duration) ease,
-    --theme-gray-200 var(--theme-transition-duration) ease,
-    --theme-gray-300 var(--theme-transition-duration) ease,
-    --theme-gray-400 var(--theme-transition-duration) ease,
-    --theme-gray-500 var(--theme-transition-duration) ease,
-    --theme-gray-600 var(--theme-transition-duration) ease,
-    --theme-gray-700 var(--theme-transition-duration) ease,
-    --theme-gray-800 var(--theme-transition-duration) ease,
-    --theme-gray-900 var(--theme-transition-duration) ease,
-    --theme-background var(--theme-transition-duration) ease;
-}
-
-.light * {
+.theme-light {
   --theme-background: white;
+
   --theme-gray-100: #f0f3f4;
   --theme-gray-200: #e8ebec;
   --theme-gray-300: #dddedf;
@@ -26,10 +14,15 @@
   --theme-gray-700: #5f6367;
   --theme-gray-800: #414548;
   --theme-gray-900: #202124;
+
+  --highlight-color: #b3d7ff;
+  --select-color: #51a1fd;
+  --focus-color: #4384f4;
 }
 
-.dark * {
+.theme-dark {
   --theme-background: #202124;
+
   --theme-gray-100: #202124;
   --theme-gray-200: #35363a;
   --theme-gray-300: #5f6367;
@@ -39,10 +32,14 @@
   --theme-gray-700: #dddedf;
   --theme-gray-800: #e8ebec;
   --theme-gray-900: #f0f3f4;
+
+  --highlight-color: #2b4766;
+  --focus-color: #4384f4;
 }
 
-.black * {
+.theme-black {
   --theme-background: #000000;
+
   --theme-gray-100: #111;
   --theme-gray-200: #35363a;
   --theme-gray-300: #5f6367;
@@ -52,4 +49,29 @@
   --theme-gray-700: #dddedf;
   --theme-gray-800: #e8ebec;
   --theme-gray-900: #f0f3f4;
+
+  --highlight-color: #523218;
+  --focus-color: #ef7719;
+}
+
+.row-width-4 {
+  --tabs-per-row: 4;
+}
+.row-width-5s {
+  --tabs-per-row: 5;
+}
+.row-width-6 {
+  --tabs-per-row: 6;
+}
+.row-width-7 {
+  --tabs-per-row: 7;
+}
+.row-width-8 {
+  --tabs-per-row: 8;
+}
+.row-width-9 {
+  --tabs-per-row: 9;
+}
+.row-width-10 {
+  --tabs-per-row: 10;
 }

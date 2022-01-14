@@ -16,7 +16,7 @@ export const SettingsPanel: React.FC<{ open: boolean, setOpen: (x: boolean) => v
           leaveFrom="opacity-100"
           leaveTo="opacity-0"
         >
-          <Dialog.Overlay className="absolute inset-0 bg-black bg-opacity-75 transition-opacity" />
+          <Dialog.Overlay className="absolute inset-0 bg-black bg-opacity-0 transition-opacity" />
         </Transition.Child>
         <div className="fixed inset-y-0 left-0 pr-10 max-w-full flex">
           <Transition.Child

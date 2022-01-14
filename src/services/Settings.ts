@@ -1,5 +1,6 @@
 import { WarpspaceEvent } from "../utils/WarpspaceEvent";
 import * as logging from "../services/Logging";
+import { produce } from "immer";
 
 export enum LogLevel {
   TRACE,
@@ -54,67 +55,17 @@ const defaultSettings: Settings = {
   },
 };
 
-var _data: Partial<Settings>;
+export var settings: Settings;
 
 export var onChange: WarpspaceEvent<[Settings]> = new WarpspaceEvent();
 
 export const data = () => {
-  return defaultSettings;
-  //return Object.assign(defaultSettings, _data);
+  // return settings;
 };
 
-// export const updateSettings = (val: Partial<Settings>) => {
-//   _data = { ..._data, ...val };
-//   localStorage.setItem("warpspaceSettings", JSON.stringify(_data));
-//   onChange.fire(data());
-// };
-
-// export const updateState = () => {
-//   try {
-//     // _data = JSON.parse(localStorage.getItem("warpspaceSettings") || "");
-//   } catch (e) {
-//     _data = {};
-//     // localStorage.setItem("warpspaceSettings", JSON.stringify(_data));
-//   }
-//   // onChange.fire(data());
-// };
-
-// updateState();
-// window.addEventListener("storage", updateState);
-
-// /**
-//  * Simple object check.
-//  * @param item
-//  * @returns {boolean}
-//  */
-// export function isObject(item: any) {
-//   return (item && typeof item === 'object' && !Array.isArray(item));
-// }
-
-// /**
-//  * Deep merge two objects.
-//  * @param target
-//  * @param sources
-//  */
-// export function mergeDeep<T>(target:  T, source: T ): T {
-
-//   if (isObject(target) && isObject(source)) {
-//     for (const key in source) {
-//       if (isObject(source[key])) {
-//         if (!target[key]) Object.assign(target, { [key]: {} });
-//         mergeDeep(target[key], source[key]);
-//       } else {
-//         Object.assign(target, { [key]: source[key] });
-//       }
-//     }
-//   }
-
-//   return mergeDeep(target, ...sources);
-// }
-
-// type RecursivePartial<T> = {
-//   [P in keyof T]?:
-//     T[P] extends (infer U)[] ? RecursivePartial<U>[] :
-//     T[P] extends object ? RecursivePartial<T[P]> :
-//     T[P];
-// };
+export const update = async (modify: (draft: Settings) => void) => {
+  // settings = produce(settings, modify);
+  // //@ts-ignore
+  // onChange.fire(settings);
+  // await chrome.storage.local.set({ WarpspaceSettings: settings });
+};

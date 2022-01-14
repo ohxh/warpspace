@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+input {
+  background: none;
+}
+
 body {
   overflow: hidden;
   height: 100vh;

@@ -44,12 +44,19 @@ export class TabStore {
 
     chrome.windows.onRemoved.addListener(this.removeWindow);
     chrome.windows.onCreated.addListener(this.addWindow);
+    chrome.windows.onFocusChanged.addListener(this.windowFocusChanged);
     chrome.tabs.onCreated.addListener(this.addTab);
     chrome.tabs.onRemoved.addListener(this.removeTab);
     chrome.tabs.onMoved.addListener(this.moveTab);
     chrome.tabs.onUpdated.addListener(this.updateTab);
     chrome.tabs.onAttached.addListener(this.attachTab);
     chrome.tabs.onActivated.addListener(this.activateTab);
+    chrome.runtime.onMessage.addListener((m) => {
+      if (m.event === "request-capture") {
+        console.warn("capture requested");
+        this.captureTab();
+      }
+    });
   }
 
   stateChanged: WarpspaceEvent<[]> = new WarpspaceEvent();
@@ -170,8 +177,8 @@ export class TabStore {
     };
 
     const state: ChromeTabState = {
-      //@ts-ignore
-      status: tab.status,
+      active: tab.active,
+      status: tab.status as "complete",
       audible: tab.audible || false,
     };
 
@@ -205,7 +212,9 @@ export class TabStore {
         state,
         metadata,
         chromeWindowId: tab.windowId,
-        crawl: storedTab.crawl,
+        crawl: {
+          lod: 3,
+        },
         openedAt: new Date(),
       };
 
@@ -352,11 +361,14 @@ export class TabStore {
   };
 
   addWindow = (window: chrome.windows.Window) => {
-    console.log("addWindow");
+    console.log("addWindow, id is ", window.id);
     const storedWindow: AnonymousWindow = {
       id: this.totalWindows++,
+      chromeId: window.id!,
 
       type: "anonymous",
+
+      focused: window.focused,
 
       status: "open",
 
@@ -380,6 +392,23 @@ export class TabStore {
     this.stateChanged.fire();
 
     db.windows.add(storedWindow);
+  };
+
+  windowFocusChanged = (chromeId: number) => {
+    console.log("windowFocusChanged");
+
+    Object.values(this.windows).forEach((v) => {
+      v.focused = false;
+    });
+
+    if (chromeId !== chrome.windows.WINDOW_ID_NONE)
+      this.windows[chromeId].focused = true;
+
+    Object.values(this.windows).forEach((v) => {
+      db.windows.update(v.id, { focused: v.focused });
+    });
+
+    this.stateChanged.fire();
   };
 
   /*updateWindow(id: number, changes: any) {
@@ -410,14 +439,59 @@ export class TabStore {
     });
   }
 
+  captureTab = async () => {
+    var t0 = performance.now();
+
+    const tab = (
+      await chrome.tabs.query({
+        active: true,
+        lastFocusedWindow: true,
+      })
+    )[0];
+    var im = await captureVisibleTab({ windowId: tab.windowId });
+
+    const key = makeid(10);
+    await this.imageStore.store(key, im);
+
+    console.log("Total time: ", performance.now() - t0);
+    const prev = this.windows[tab.windowId].tabs.find(
+      (n) => n.state.active === true
+    );
+    const cur = this.tabs[tab.id!];
+
+    cur.state.active = true;
+
+    cur.crawl = {
+      ...cur.crawl,
+      lod: 1,
+      previewImage: key,
+    };
+
+    console.log("Stored image", key, im);
+
+    db.visits.update(cur.id, {
+      crawl: cur.crawl,
+      state: cur.state,
+    });
+    console.log(cur.metadata.title, " is now active");
+    if (prev) {
+      prev.state.active = false;
+      db.visits.update(prev.id, {
+        state: prev.state,
+      });
+    }
+  };
+
   activateTab = async (activeInfo: chrome.tabs.TabActiveInfo) => {
     setTimeout(async () => {
-      console.log("activateTab");
+      var t0 = performance.now();
+      console.log("activateTab ", activeInfo.tabId, activeInfo.windowId);
       var im = await captureVisibleTab({ windowId: activeInfo.windowId });
 
       const key = makeid(10);
-      this.imageStore.store(key, im);
+      await this.imageStore.store(key, im);
 
+      console.log("Total time: ", performance.now() - t0);
       const prev = this.windows[activeInfo.windowId].tabs.find(
         (n) => n.state.active === true
       );
@@ -437,6 +511,7 @@ export class TabStore {
         crawl: cur.crawl,
         state: cur.state,
       });
+      console.log(cur.metadata.title, " is now active");
       if (prev) {
         prev.state.active = false;
         db.visits.update(prev.id, {

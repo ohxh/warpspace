@@ -34,16 +34,28 @@ export class WarpspaceFrameController {
     const frame = document.createElement("iframe");
     frame.src = chrome.runtime.getURL("app.html");
     frame.id = "warpspace-injected-app";
-    frame.style.visibility = "hidden";
+    // frame.style.opacity = "0";
+    frame.style.pointerEvents = "none";
     this.frame = frame;
+
+    window.addEventListener("visibilitychange", (e) => {
+      if (document.hidden && this.warpspaceOpen) this.exitWarpspace();
+    });
 
     document.addEventListener("keydown", (e) => {
       if (e.key == "Escape") this.exitWarpspace();
     });
     document.addEventListener("wheel", this.onWheel, { passive: false });
+
     window.addEventListener("DOMContentLoaded", (event) => {
       document.body.appendChild(frame);
       debug("DOM loaded, attached frame");
+    });
+
+    window.addEventListener("message", (m) => {
+      console.warn("Got msg", m);
+      //@ts-ignore
+      if (m.data["event"] === "exit-warpspace") this.exitWarpspace();
     });
   }
 
@@ -52,6 +64,7 @@ export class WarpspaceFrameController {
     if (e.ctrlKey) {
       if (!this.warpspaceOpen) {
         this.pinchZoomLevel += e.deltaY;
+
         if (this.pinchZoomLevel > ENTER_WARPSPACE_THRESHOLD) {
           this.enterWarpspace();
         }
@@ -71,28 +84,30 @@ export class WarpspaceFrameController {
   };
 
   enterWarpspace = () => {
+    this.frame.contentWindow!.postMessage({ event: "enter-warpspace" }, "*");
     this.pinchZoomLevel = 0;
     this.warpspaceOpen = true;
 
     this.zoomBlocked = true;
     this.window.clearTimeout(this.zoomBlockTimeout);
 
-    this.frame.style.visibility = "visible";
+    // this.frame.style.opacity = "1";
+    this.frame.style.pointerEvents = "auto";
 
-    this.frame.contentWindow!.postMessage({ event: "enter-warpspace" });
     info("Entered warpspace.");
   };
 
   exitWarpspace = () => {
     this.pinchZoomLevel = 0;
     this.warpspaceOpen = false;
-    this.frame.style.visibility = "hidden";
+    // this.frame.style.opacity = "0";
+    this.frame.style.pointerEvents = "none";
 
     this.zoomBlockTimeout = this.window.setTimeout(() => {
       this.zoomBlocked = false;
     }, EXIT_WARPSPACE_ZOOM_BLOCK);
 
-    this.frame.contentWindow!.postMessage({ event: "exit-warpspace" });
+    this.frame.contentWindow!.postMessage({ event: "exit-warpspace" }, "*");
 
     info("Exited warpspace.");
   };

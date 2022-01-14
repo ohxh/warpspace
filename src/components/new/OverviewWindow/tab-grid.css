@@ -1,0 +1,39 @@
+* {
+  --window-target-gap: 6vw;
+  --window-max-width: 80vw;
+  --tab-max-width: 240px;
+
+  --tab-grid-gap: 18px;
+
+  --carousel-edge-padding: calc(50vw - var(--window-max-width) / 2);
+
+  --tab-grid-total-x-gap: calc((var(--tabs-per-row) - 1) * var(--tab-grid-gap));
+  --window-target-width: calc(
+    var(--tabs-per-row) * var(--tab-max-width) + var(--tab-grid-total-x-gap)
+  );
+  --tab-natural-width: calc(
+    (var(--window-max-width) - var(--tab-grid-total-x-gap)) /
+      var(--tabs-per-row)
+  );
+}
+
+.window {
+  width: var(--window-target-width);
+  max-width: var(--window-max-width);
+  margin-right: var(--window-target-gap);
+}
+
+.window:last-of-type {
+  margin-right: none;
+}
+
+.tab-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--tabs-per-row), minmax(0, 1fr));
+  gap: var(--tab-grid-gap);
+}
+
+.tab {
+  width: var(--tab-natural-width);
+  max-width: var(--tab-max-width);
+}

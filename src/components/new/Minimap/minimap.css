@@ -1,0 +1,15 @@
+.minimap-window {
+  width: calc(var(--window-target-width) / 10);
+  max-width: calc(var(--window-max-width) / 10);
+  margin-right: calc(var(--window-target-gap) / 10);
+}
+
+.minimap-window:last-of-type {
+  margin-right: none;
+}
+
+.minimap-tab-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--tabs-per-row), minmax(0, 1fr));
+  gap: 3px;
+}

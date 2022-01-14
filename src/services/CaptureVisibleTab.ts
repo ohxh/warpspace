@@ -9,10 +9,10 @@ export async function captureVisibleTab(info: { windowId: number }) {
   try {
     var t0 = performance.now();
     var screenshot = await chrome.tabs.captureVisibleTab(info.windowId, {
-      format: "png",
+      format: "jpeg",
       quality: 10,
     });
-    console.log("Capture image", performance.now() - t0);
+    console.log("Capture image", performance.now() - t0, "!!");
     t0 = performance.now();
     const result = await crunchPreview(screenshot, {
       maxWidth: PREVIEW_WIDTH,

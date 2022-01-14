@@ -6,7 +6,8 @@ const srcDir = path.join(__dirname, "..", "src");
 module.exports = {
     entry: {
       app: path.join(srcDir, 'app.tsx'),
-      popup: path.join(srcDir, 'popup.tsx'),
+      new_tab: path.join(srcDir, 'new_tab.tsx'),
+      notes: path.join(srcDir, 'notes.tsx'),
       options: path.join(srcDir, 'options.tsx'),
       background: path.join(srcDir, 'background.ts'),
       content_script: path.join(srcDir, 'content_script.tsx'),
@@ -16,12 +17,12 @@ module.exports = {
         filename: "[name].js",
     },
     optimization: {
-        splitChunks: {
-            name: "vendor",
-            chunks(chunk) {
-              return chunk.name !== 'background';
-            }
-        },
+        // splitChunks: {
+        //     name: "vendor",
+        //     chunks(chunk) {
+        //       return chunk.name !== 'background';
+        //     }
+        // },
     },
     module: {
         rules: [
@@ -32,21 +33,20 @@ module.exports = {
             },
             {
               test: /\.css$/i,
-              exclude: /node_modules/,
               use: ['style-loader', 'css-loader', 'postcss-loader'],
             },
-            {
-              test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-              use: [
-                {
-                  loader: 'file-loader',
-                  options: {
-                    name: '[name].[ext]',
-                    outputPath: 'fonts/'
-                  }
-                }
-              ]
-            },
+            // {
+            //   test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+            //   use: [
+            //     {
+            //       loader: 'file-loader',
+            //       options: {
+            //         name: '[name].[ext]',
+            //         outputPath: 'fonts/'
+            //       }
+            //     }
+            //   ]
+            // },
             {
               test: /\.(png|svg|jpg|jpeg|gif)$/i,
               type: 'asset/resource',

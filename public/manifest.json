@@ -9,6 +9,9 @@
     "page": "options.html"
   },
 
+  "chrome_url_overrides": {
+    "newtab": "new_tab.html"
+  },
   "action": {
     "default_icon": "icon.png",
     "default_popup": "popup.html"
@@ -30,7 +33,7 @@
         "all_frames": false,
           "matches": ["<all_urls>"],
           "run_at": "document_start",
-          "js": ["js/vendor.js", "js/content_script.js"],
+          "js": ["js/content_script.js"],
           "css": ["content.css"]
       }
   ],
@@ -42,7 +45,8 @@
   "permissions": [
     "history",
     "storage",
-    "scripting"
+    "scripting",
+    "unlimitedstorage"
   ],
 
   "host_permissions": [

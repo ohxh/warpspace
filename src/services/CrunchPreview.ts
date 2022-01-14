@@ -16,7 +16,8 @@ export async function crunchPreview(dataUrl: string, options: CrunchOptions) {
     var t0 = performance.now();
     console.log("Start: ", performance.now() - t0);
 
-    const img = await createImageBitmap(dataURLtoBlob(dataUrl));
+    // Todo: faster way to draw dataurl to canvas
+    const img = await createImageBitmap(await dataURLtoBlob(dataUrl));
 
     var width, height;
 
@@ -47,12 +48,17 @@ export async function crunchPreview(dataUrl: string, options: CrunchOptions) {
     console.log("Hermite filter: ", performance.now() - t0);
     var t0 = performance.now();
 
-    const resized = await canvas.convertToBlob();
+    const resized = await canvas.convertToBlob({
+      type: "image/webp",
+      quality: 0.3,
+    });
 
     const res = await toDataURL(resized);
 
     console.log("Finish: ", performance.now() - t0);
     var t0 = performance.now();
+
+    console.log("Size: ", (res.length * 2) / 1024 + "kb");
     resolve(res);
   });
 }
@@ -145,14 +151,6 @@ function HermiteFilterResize(
   ctx.putImageData(outputImage, 0, 0);
 }
 
-function dataURLtoBlob(dataurl: string) {
-  var arr = dataurl.split(","),
-    mime = arr[0].match(/:(.*?);/)![1],
-    bstr = atob(arr[1]),
-    n = bstr.length,
-    u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new Blob([u8arr], { type: mime });
+async function dataURLtoBlob(dataurl: string) {
+  return await (await fetch(dataurl)).blob();
 }

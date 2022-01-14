@@ -1,6 +1,6 @@
 iframe#warpspace-injected-app {
   position: fixed;
-  z-index: 2000000000;
+  z-index: 2147483647;
   top: 0;
   left: 0;
   width: 100vw;
@@ -10,13 +10,5 @@ iframe#warpspace-injected-app {
   padding: 0;
   max-width: none;
   background: none;
-  background: white;
-}
-
-body.zoomout {
-  transition: transform 0.2s ease-out;
-}
-
-body.zoomout {
-  transform: scale(0.1);
+  background: transparent;
 }

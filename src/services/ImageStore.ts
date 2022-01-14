@@ -9,7 +9,7 @@ export class ImageStore {
 
   /** Stores a base64 encoded image */
   store(key: string, image: string) {
-    chrome.storage.local.set({ [`${this.name}.${key}`]: image });
+    return chrome.storage.local.set({ [`${this.name}.${key}`]: image });
   }
 
   /** Gets a base64 encoded image */

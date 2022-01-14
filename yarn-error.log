@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/local/bin/node /usr/local/Cellar/yarn/1.22.10/libexec/bin/yarn.js add @types/filereadersync
+  /usr/local/bin/node /usr/local/Cellar/yarn/1.22.10/libexec/bin/yarn.js add @types/immer
 
 PATH: 
   /Users/oliverhopcroft/.opam/4.10.0/bin:/Users/oliverhopcroft/google-cloud-sdk/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/oliverhopcroft/.pub-cache/bin:/Users/oliverhopcroft/development/flutter/bin:/usr/local/share/dotnet:/opt/X11/bin:~/.dotnet/tools:/Library/Apple/usr/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands:/Applications/Postgres.app/Contents/Versions/latest/bin:/Users/oliverhopcroft/google-cloud-sdk/bin:/Users/oliverhopcroft/.opam/4.10.0/bin:/usr/local/anaconda3/bin:/usr/local/anaconda3/condabin:/Users/oliverhopcroft/.cargo/bin
@@ -14,7 +14,7 @@ Platform:
   darwin x64
 
 Trace: 
-  Error: https://registry.yarnpkg.com/@types%2ffilereadersync: Not found
+  Error: https://registry.yarnpkg.com/@types%2fimmer: Not found
       at Request.params.callback [as _callback] (/usr/local/Cellar/yarn/1.22.10/libexec/lib/cli.js:66988:18)
       at Request.self.callback (/usr/local/Cellar/yarn/1.22.10/libexec/lib/cli.js:140749:22)
       at Request.emit (events.js:400:28)
@@ -53,12 +53,14 @@ npm manifest:
       "@mozilla/readability": "^0.4.1",
       "@types/flexsearch": "^0.7.2",
       "@types/offscreencanvas": "^2019.6.4",
+      "@types/sortablejs": "^1.10.7",
       "autoprefixer": "^10.4.1",
       "babel-loader": "^8.2.3",
       "css-loader": "^6.5.1",
       "dexie": "^3.2.0",
       "dexie-react-hooks": "^1.1.1",
       "flexsearch": "^0.7.21",
+      "immer": "^9.0.7",
       "postcss": "^8.4.5",
       "postcss-loader": "^6.2.1",
       "postcss-preset-env": "^7.1.0",
@@ -66,6 +68,8 @@ npm manifest:
       "react-command-palette": "^0.16.2",
       "react-dom": "^17.0.1",
       "react-flip-toolkit": "^7.0.13",
+      "react-sortablejs": "^6.0.0",
+      "sortablejs": "^1.14.0",
       "style-loader": "^3.3.1",
       "tailwindcss": "^3.0.8",
       "webpack-dev-server": "^4.7.1"
@@ -1615,6 +1619,11 @@ Lockfile:
     dependencies:
       "@types/node" "*"
   
+  "@types/sortablejs@^1.10.7":
+    version "1.10.7"
+    resolved "https://registry.yarnpkg.com/@types/sortablejs/-/sortablejs-1.10.7.tgz#ab9039c85429f0516955ec6dbc0bb20139417b15"
+    integrity sha512-lGCwwgpj8zW/ZmaueoPVSP7nnc9t8VqVWXS+ASX3eoUUENmiazv0rlXyTRludXzuX9ALjPsMqBu85TgJNWbTOg==
+  
   "@types/stack-utils@^2.0.0":
     version "2.0.1"
     resolved "https://registry.yarnpkg.com/@types/stack-utils/-/stack-utils-2.0.1.tgz#20f18294f797f2209b5f65c8e3b5c8e8261d127c"
@@ -2323,6 +2332,11 @@ Lockfile:
     version "1.2.2"
     resolved "https://registry.yarnpkg.com/cjs-module-lexer/-/cjs-module-lexer-1.2.2.tgz#9f84ba3244a512f3a54e5277e8eef4c489864e40"
     integrity sha512-cOU9usZw8/dXIXKtwa8pM0OTJQuJkxMN6w30csNRUerHfeQ5R6U3kkU/FtJeIf3M202OHfY2U8ccInBG7/xogA==
+  
+  classnames@^2.2.6:
+    version "2.3.1"
+    resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.3.1.tgz#dfcfa3891e306ec1dad105d0e88f4417b8535e8e"
+    integrity sha512-OlQdbZ7gLfGarSqxesMesDa5uz7KFbID8Kpq/SxIoNGDqY8lSYs0D+hhtBXhcdB3rcbXArFr7vlHheLk1voeNA==
   
   clean-stack@^2.0.0:
     version "2.2.0"
@@ -3393,6 +3407,11 @@ Lockfile:
     version "5.1.9"
     resolved "https://registry.yarnpkg.com/ignore/-/ignore-5.1.9.tgz#9ec1a5cbe8e1446ec60d4420060d43aa6e7382fb"
     integrity sha512-2zeMQpbKz5dhZ9IwL0gbxSW5w0NK/MSAMtNuhgIHEPmaU3vPdKPL0UdvUCXs5SS4JAwsBxysK5sFMW8ocFiVjQ==
+  
+  immer@^9.0.7:
+    version "9.0.7"
+    resolved "https://registry.yarnpkg.com/immer/-/immer-9.0.7.tgz#b6156bd7db55db7abc73fd2fdadf4e579a701075"
+    integrity sha512-KGllzpbamZDvOIxnmJ0jI840g7Oikx58lBPWV0hUh7dtAyZpFqqrBZdKka5GlTwMTZ1Tjc/bKKW4VSFAt6BqMA==
   
   import-cwd@^3.0.0:
     version "3.0.0"
@@ -5155,6 +5174,14 @@ Lockfile:
       react-lifecycles-compat "^3.0.0"
       warning "^4.0.3"
   
+  react-sortablejs@^6.0.0:
+    version "6.0.0"
+    resolved "https://registry.yarnpkg.com/react-sortablejs/-/react-sortablejs-6.0.0.tgz#ba75ded6dce3fa1b5b3b52c70d1928fcdee2003d"
+    integrity sha512-vzi+TWOnofcYg+dYnC/Iz/ZZkBGG76uM6KaLwuAqBk0349JQxIy3PZizbK0TJdLlK6NnLt4CiEyyQXSSnVYvEw==
+    dependencies:
+      classnames "^2.2.6"
+      tiny-invariant "^1.1.0"
+  
   react-themeable@^1.1.0:
     version "1.1.0"
     resolved "https://registry.yarnpkg.com/react-themeable/-/react-themeable-1.1.0.tgz#7d4466dd9b2b5fa75058727825e9f152ba379a0e"
@@ -5535,6 +5562,11 @@ Lockfile:
       uuid "^8.3.2"
       websocket-driver "^0.7.4"
   
+  sortablejs@^1.14.0:
+    version "1.14.0"
+    resolved "https://registry.yarnpkg.com/sortablejs/-/sortablejs-1.14.0.tgz#6d2e17ccbdb25f464734df621d4f35d4ab35b3d8"
+    integrity sha512-pBXvQCs5/33fdN1/39pPL0NZF20LeRbLQ5jtnheIPN9JQAaufGjKdWduZn4U7wCtVuzKhmRkI0DFYHYRbB2H1w==
+  
   source-map-js@^1.0.1:
     version "1.0.1"
     resolved "https://registry.yarnpkg.com/source-map-js/-/source-map-js-1.0.1.tgz#a1741c131e3c77d048252adfa24e23b908670caf"
@@ -5780,6 +5812,11 @@ Lockfile:
     version "1.1.0"
     resolved "https://registry.yarnpkg.com/thunky/-/thunky-1.1.0.tgz#5abaf714a9405db0504732bbccd2cedd9ef9537d"
     integrity sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==
+  
+  tiny-invariant@^1.1.0:
+    version "1.2.0"
+    resolved "https://registry.yarnpkg.com/tiny-invariant/-/tiny-invariant-1.2.0.tgz#a1141f86b672a9148c72e978a19a73b9b94a15a9"
+    integrity sha512-1Uhn/aqw5C6RI4KejVeTg6mIS7IqxnLJ8Mv2tV5rTc0qWobay7pDUz6Wi392Cnc8ak1H0F2cjoRzb2/AW4+Fvg==
   
   tmp@^0.2.1:
     version "0.2.1"

@@ -1,0 +1,89 @@
+.tab {
+  position: relative;
+}
+
+.tab .selection {
+  position: absolute;
+  left: calc(-1 * var(--tab-grid-gap) / 2);
+  right: calc(-1 * var(--tab-grid-gap) / 2);
+  top: calc(-1 * var(--tab-grid-gap) / 2 + 2px);
+  bottom: calc(-1 * var(--tab-grid-gap) / 2 + 6px);
+  border-radius: 5px;
+}
+
+.tab:not(.sortable-selected) + .tab.sortable-selected .selection,
+:matches(.tab.sortable-selected:first-of-type) .selection {
+  border-radius: 5px;
+}
+
+.tab.sortable-selected .selection {
+  border-radius: 0px 5px 5px 0px;
+}
+
+.row-width-4 .tab.sortable-selected:nth-of-type(4n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-4 .tab.sortable-selected:nth-of-type(4n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-5 .tab.sortable-selected:nth-of-type(5n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-5 .tab.sortable-selected:nth-of-type(5n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-6 .tab.sortable-selected:nth-of-type(6n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-6 .tab.sortable-selected:nth-of-type(6n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-7 .tab.sortable-selected:nth-of-type(7n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-7 .tab.sortable-selected:nth-of-type(7n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-8 .tab.sortable-selected:nth-of-type(8n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-8 .tab.sortable-selected:nth-of-type(8n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-9 .tab.sortable-selected:nth-of-type(9n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-9 .tab.sortable-selected:nth-of-type(9n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-10 .tab.sortable-selected:nth-of-type(10n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.row-width-10 .tab.sortable-selected:nth-of-type(10n + 1) .selection {
+  border-radius: 5px !important;
+}
+
+.tab:not(.sortable-selected) + .tab.sortable-selected .selection {
+  border-radius: 5px !important;
+}
+
+.tab.sortable-selected + .tab.sortable-selected .selection {
+  left: calc(-1 * var(--tab-grid-gap) / 2 - 5px);
+}
+
+.tab.sortable-ghost {
+  opacity: 0;
+}

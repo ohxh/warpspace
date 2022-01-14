@@ -123,8 +123,10 @@ export type Visit = SuspendedVisit | ActiveVisit | ClosedVisit;
 export interface AnonymousWindow {
   id: number;
   type: "anonymous";
+  chromeId: number;
 
   status: "open" | "closed";
+  focused: boolean;
 
   height: number;
   width: number;
@@ -138,10 +140,13 @@ export interface AnonymousWindow {
 export interface FullWindow {
   id: number;
   type: "full";
+  chromeId: number;
 
   title: string;
 
   status: "open" | "closed";
+  focused: boolean;
+
   height: number;
   width: number;
 

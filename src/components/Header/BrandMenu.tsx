@@ -15,6 +15,7 @@ export const BrandMenu: React.FC<{}> = ({ }) => {
       <Menu.Button className="rounded p-1 flex items-center hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
         <span className="sr-only">Open options</span>
         <img src={logo} className="w-5 h-5" aria-hidden={true} />
+
       </Menu.Button>
     </div>
 
@@ -27,7 +28,7 @@ export const BrandMenu: React.FC<{}> = ({ }) => {
       leaveFrom="transform opacity-100 scale-100"
       leaveTo="transform opacity-0 scale-95"
     >
-      <Menu.Items className="bg-white origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+      <Menu.Items className="z-10 bg-[#fff] bg-opacity-10 border backdrop-blur-md origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-xl focus:outline-none">
         <div className="px-4 py-3">
           <p className="text-sm">Signed in as</p>
           <p className="text-sm font-medium text-gray-900 truncate">tom@example.com</p>

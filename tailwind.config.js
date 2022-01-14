@@ -1,3 +1,5 @@
+const plugin = require('tailwindcss/plugin')
+
 module.exports = {
   content: [
     // Example content paths...
@@ -6,6 +8,11 @@ module.exports = {
   ],
   darkMode: 'class', // or 'media' or 'class'
   theme: {
+    extend: {
+      boxShadow: {
+        '3xl': 'box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;',
+      }
+    },
     colors: {
       'blue': '#1fb6ff',
       'purple': '#7e5bef',
@@ -17,8 +24,10 @@ module.exports = {
       'gray': '#8492a6',
       'gray-light': '#d3dce6',
       transparent: 'transparent',
-      black: '#000',
-      white: "var(--theme-background)",
+      background: 'var(--theme-background)',
+      highlight: 'var(--highlight-color)',
+      select: 'var(--select-color)',
+      focus: "var(--focus-color)",
       gray: {
         100: "var(--theme-gray-100)",
         200: "var(--theme-gray-200)",
@@ -43,5 +52,12 @@ module.exports = {
       },
     }
   },
-  plugins: [],
+  plugins: [
+    plugin(function({ addVariant, addUtilities, addComponents, e, prefix, config }) {
+      addVariant("sortable-drag", ".sortable-drag &")
+      addVariant("sortable-ghost", ".sortable-ghost &")
+      addVariant("sortable-selected", ".sortable-selected &")
+      addVariant("sortable-group-drag", ".sortable-selected.sortable-drag &")
+    }),
+  ],
 }
