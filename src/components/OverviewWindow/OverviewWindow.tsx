@@ -6,8 +6,8 @@ import React, { useEffect, useState } from "react";
 import { Flipped, Flipper } from "react-flip-toolkit";
 import { ReactSortable } from "react-sortablejs";
 import Sortable, { AutoScroll, MultiDrag } from "sortablejs";
-import { HydratedWindow } from "../../../services/TabStore";
-import { EditableText } from "../../Window/EditableText";
+import { HydratedWindow } from "../../services/TabStore";
+import { EditableText } from "../Window/EditableText";
 import "./tab-grid.css"
 
 Sortable.mount(new MultiDrag())

@@ -1,8 +1,7 @@
 import { PlusIcon, DocumentTextIcon } from "@heroicons/react/outline";
 import React, { useRef } from "react";
 import { ReactSortable } from "react-sortablejs";
-import { HydratedWindow } from "../../../services/TabStore";
-import { WarpspaceWindow } from "../../Window/Window";
+import { HydratedWindow } from "../../services/TabStore";
 import { OverviewTab } from "../OverviewTab/OverviewTab";
 import { OverviewWindow } from "../OverviewWindow/OverviewWindow";
 

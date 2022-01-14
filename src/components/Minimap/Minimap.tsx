@@ -1,5 +1,5 @@
 import React from "react";
-import { HydratedWindow } from "../../../services/TabStore";
+import { HydratedWindow } from "../../services/TabStore";
 import "./minimap.css"
 export const Minimap: React.FC<{
   browserState: HydratedWindow[];

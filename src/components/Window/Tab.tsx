@@ -8,8 +8,8 @@ import { useDebounce } from "@react-hook/debounce";
 import { ChromeIcon } from "./ChromeIcon";
 import { WorldIcon } from "./WorldIcon";
 import { XIcon } from "@heroicons/react/solid";
-import { OverviewTabContextMenu } from "../new/OverviewTab/OverviewTabContextMenu";
-import { useTabSelection } from "../new/App/SelectionContext";
+import { useTabSelection } from "../App/SelectionContext";
+import { OverviewTabContextMenu } from "../OverviewTab/OverviewTabContextMenu";
 
 const MyApp: React.FC<{ selectedTabs: ActiveVisit[], tab: ActiveVisit }> = ({ children, tab, selectedTabs, }) => {
   const { toggleMenu, ...menuProps } = useMenuState();

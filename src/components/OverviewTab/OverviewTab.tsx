@@ -7,12 +7,12 @@ import { OverviewTabContextMenu } from "./OverviewTabContextMenu";
 import "./overview-tab.css";
 import { XIcon } from "@heroicons/react/outline";
 import { current } from "immer";
-import { ActiveVisit } from "../../../services/Database";
-import { ChromeIcon } from "../../Window/ChromeIcon";
-import { LocalStorageImage } from "../../Window/Tab";
-import { WorldIcon } from "../../Window/WorldIcon";
+import { ActiveVisit } from "../../services/Database";
 import { useDebounce } from "@react-hook/debounce";
 import { useTabSelection } from "../App/SelectionContext";
+import { LocalStorageImage } from "../LocalStorageImage";
+import { ChromeIcon } from "../Window/ChromeIcon";
+import { WorldIcon } from "../Window/WorldIcon";
 
 export const OverviewTab: React.FC<{ current: Boolean, tab: ActiveVisit, tabRef: (x: HTMLElement | null) => void }> = ({ current, tabRef, tab, }) => {
 

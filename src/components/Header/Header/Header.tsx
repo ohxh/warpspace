@@ -1,8 +1,11 @@
 import { Menu } from "@headlessui/react";
 import { SearchIcon } from "@heroicons/react/outline";
 import React, { useState } from "react";
-import { SettingsPanel } from "../Settings/SettingsPanel";
+import { ActiveVisit } from "../../../services/Database";
+import { SettingsPanel } from "../../new/Settings/SettingsPanel";
+import { SearchResult } from "../../Search/SearchResult";
 import { BrandMenu } from "./BrandMenu";
+
 
 const commands = [{
   name: "Foo",
@@ -15,7 +18,7 @@ const commands = [{
 ];
 
 
-export const Header: React.FC = () => {
+export const Header: React.FC<{ tab: ActiveVisit }> = ({ tab }) => {
 
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);

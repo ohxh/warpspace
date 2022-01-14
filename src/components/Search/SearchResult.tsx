@@ -1,6 +1,6 @@
 import React from "react";
 import { ActiveVisit } from "../../services/Database";
-import { LocalStorageImage } from "../Window/Tab";
+import { LocalStorageImage } from "../LocalStorageImage";
 
 
 

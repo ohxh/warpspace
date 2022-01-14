@@ -1,21 +1,10 @@
-import { useLiveQuery } from "dexie-react-hooks";
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
 import ReactDOM from "react-dom";
-import { WarpspaceWindow } from "./components/Window/Window";
-import { ActiveVisit, db } from "./services/Database";
-import { HydratedWindow } from "./services/TabStore";
-import "./style.css";
-import { Header } from "./components/Header/Header";
-import { ReactSortable } from "react-sortablejs";
-import { Tab } from "./components/Window/Tab";
-import { DocumentTextIcon, PlusIcon } from "@heroicons/react/outline";
-import { useDebounce } from "@react-hook/debounce";
-import produce from "immer";
-import "./components/new/Settings/theme.css"
+import { OverviewApp } from "./components/App/App";
+import { FocusHider } from "./components/App/FocusHider";
 import { AppSettingsProvider } from "./components/new/Settings/AppSettingsContext";
-import { OverviewTab } from "./components/new/OverviewTab/OverviewTab";
-import { OverviewApp } from "./components/new/App/App";
-import { FocusHider } from "./components/new/App/FocusHider";
+import "./components/new/Settings/theme.css";
+
 
 // Hide app unless in active tab
 

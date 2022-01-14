@@ -1,8 +1,8 @@
 import { useDebounce } from "@react-hook/debounce";
 import { useLiveQuery } from "dexie-react-hooks";
 import React, { useEffect, useRef, useState } from "react";
-import { db, ActiveVisit } from "../../../services/Database";
-import { HydratedWindow } from "../../../services/TabStore";
+import { db, ActiveVisit } from "../../services/Database";
+import { HydratedWindow } from "../../services/TabStore";
 import { Carousel } from "../Carousel/Carousel";
 import { Header } from "../Header/Header";
 import { Minimap } from "../Minimap/Minimap";
