@@ -53,7 +53,6 @@ export class WarpspaceFrameController {
     });
 
     window.addEventListener("message", (m) => {
-      console.warn("Got msg", m);
       //@ts-ignore
       if (m.data["event"] === "exit-warpspace") this.exitWarpspace();
     });

@@ -58,6 +58,7 @@ module.exports = {
       addVariant("sortable-ghost", ".sortable-ghost &")
       addVariant("sortable-selected", ".sortable-selected &")
       addVariant("sortable-group-drag", ".sortable-selected.sortable-drag &")
+      addVariant("sortable-none-dragging", ".sortable-none-dragging &")
     }),
   ],
 }

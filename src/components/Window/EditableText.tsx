@@ -21,8 +21,9 @@ export const EditableText: React.FC<{
   if (editing)
     return (
       <input
-        className="text-gray-900 text-4xl w-full rounded-sm ring-0 outline-none focus:ring-2 ring-offset-2 ring-blue"
+        className="text-gray-900 placeholder:text-gray-300 text-4xl w-full rounded-sm ring-0 outline-none focus:ring-2 ring-offset-2 ring-focus"
         autoFocus
+        placeholder={placeholder}
         value={state}
         onChange={(e) => setState(e.target.value)}
         onBlur={commit}
@@ -42,7 +43,7 @@ export const EditableText: React.FC<{
             {value}
           </h1>
         )}
-        {!value && <h1 className="text-gray-400 text-4xl">{placeholder}</h1>}
+        {!value && <h1 className="text-gray-300 text-4xl">{placeholder}</h1>}
         <PencilIcon className="text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity w-5 h-5 ml-2" />
       </span>
     );

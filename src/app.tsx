@@ -4,7 +4,7 @@ import { OverviewApp } from "./components/App/App";
 import { FocusHider } from "./components/App/FocusHider";
 import { AppSettingsProvider } from "./components/new/Settings/AppSettingsContext";
 import "./components/new/Settings/theme.css";
-
+import "./style.css";
 
 // Hide app unless in active tab
 
@@ -28,9 +28,7 @@ document.addEventListener(
   function (e) {
     // Pinch zoom gestures come in as ctrl + scroll for backwards compatibility
     if (e.ctrlKey) {
-      console.warn(e.deltaY);
       if (e.deltaY < EXIT_WARPSPACE_THRESHOLD) {
-        console.log("trying to leave");
         window.top!.postMessage(
           { event: "exit-warpspace" },
           { targetOrigin: "*" }
@@ -52,4 +50,11 @@ window.addEventListener("message", (m) => {
     document.body.style.opacity = "0";
   }
 });
+
+//@ts-ignore
+chrome.tabs.getZoom((z) => {
+  document.documentElement.style.fontSize = 100 / z + "%"
+})
+
+
 

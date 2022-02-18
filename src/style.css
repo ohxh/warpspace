@@ -26,3 +26,25 @@ body {
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
+
+kbd {
+  @apply font-mono border rounded-sm px-1.5 py-0.5 inline-block;
+}
+
+.max-lines-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.max-lines-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.max-lines-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}

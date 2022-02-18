@@ -49,7 +49,6 @@ const store = new TabStore(imageStore);
 store.getInitialData();
 
 store.stateChanged.addListener(() => {
-  console.log("Sending message");
   chrome.runtime.sendMessage(store.state);
 });
 

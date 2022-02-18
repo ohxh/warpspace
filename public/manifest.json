@@ -46,7 +46,8 @@
     "history",
     "storage",
     "scripting",
-    "unlimitedstorage"
+    "unlimitedStorage",
+    "topSites"
   ],
 
   "host_permissions": [

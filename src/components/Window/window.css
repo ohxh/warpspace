@@ -19,22 +19,3 @@
   opacity: 1;
   transform: scale(1);
 }
-
-@keyframes zoomout {
-  0% {
-    transform: scale(6);
-    border-radius: 0;
-  }
-
-  100% {
-    transform: scale(1);
-    border-radius: 10px;
-  }
-}
-
-.zoomout {
-  z-index: 99999999999;
-  position: relative;
-  animation: 0.2s 0s zoomout;
-  opacity: 1;
-}

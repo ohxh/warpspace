@@ -87,3 +87,23 @@
 .tab.sortable-ghost {
   opacity: 0;
 }
+
+@keyframes zoomout {
+  0% {
+    transform: scale(var(--scale));
+    border-radius: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    border-radius: 10px;
+  }
+}
+
+.zoomout {
+  transform-origin: var(--left) var(--top);
+  z-index: 99999999999;
+  position: relative;
+  animation: 0.18s 0s zoomout;
+  opacity: 1;
+}

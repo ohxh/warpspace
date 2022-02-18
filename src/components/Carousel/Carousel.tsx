@@ -1,17 +1,24 @@
 import { PlusIcon, DocumentTextIcon } from "@heroicons/react/outline";
 import React, { useRef } from "react";
 import { ReactSortable } from "react-sortablejs";
+import { ActiveVisit } from "../../services/Database";
 import { HydratedWindow } from "../../services/TabStore";
 import { OverviewTab } from "../OverviewTab/OverviewTab";
 import { OverviewWindow } from "../OverviewWindow/OverviewWindow";
 
-export const Carousel: React.FC<{
-  browserState: HydratedWindow[];
-  updateBrowserState: () => void;
-  toggleSelected: (x: number) => void;
-  currentTab: number
-}> = ({ browserState, toggleSelected, currentTab }) => {
+let x = false;
+let xT: number | undefined = undefined;
 
+export const CarouselContent: React.FC<{
+  browserState: HydratedWindow[];
+  handleWindowChange: (w: HydratedWindow, l: ActiveVisit[]) => void;
+  toggleSelected: (x: number) => void;
+  currentTab: number,
+  onDragStart: () => void;
+  onDragEnd: () => void
+}> = ({ onDragStart, onDragEnd, browserState, toggleSelected, currentTab, handleWindowChange }) => {
+
+  // console.warn("!! Carousel Rendekkrs");
   // Map of refs from tab IDs for manipulating focus
   const tabRefs = useRef<Record<number, HTMLButtonElement>>({});
 
@@ -77,6 +84,12 @@ export const Carousel: React.FC<{
         location[0] -= 1;
         location[1] += 5;
 
+        tabRefs.current[browserState[location[0]].tabs[location[1]].id].scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+
         if (location[1] >= browserState[location[0]].tabs.length)
           location[1] = browserState[location[0]].tabs.length - 1;
       }
@@ -87,11 +100,7 @@ export const Carousel: React.FC<{
     tabRefs.current[browserState[location[0]].tabs[location[1]].id].focus({
       preventScroll: true,
     });
-    tabRefs.current[browserState[location[0]].tabs[location[1]].id].scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+
   };
 
   const focusRight = () => {
@@ -109,6 +118,12 @@ export const Carousel: React.FC<{
         location[1] -= 5;
         if (location[1] >= browserState[location[0]].tabs.length)
           location[1] = browserState[location[0]].tabs.length - 1;
+
+        tabRefs.current[browserState[location[0]].tabs[location[1]].id].scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
       }
     } else if (location[1] === browserState[location[0]].tabs.length - 1) {
       // alert("hi")
@@ -126,12 +141,9 @@ export const Carousel: React.FC<{
     tabRefs.current[browserState[location[0]].tabs[location[1]].id].focus({
       preventScroll: true,
     });
-    tabRefs.current[browserState[location[0]].tabs[location[1]].id].scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "center",
-    });
+
   };
+
 
   return <div
     onKeyDown={(e) => {
@@ -158,23 +170,39 @@ export const Carousel: React.FC<{
       paddingRight: "var(--carousel-edge-padding)",
     }}
   >
+
     {browserState.map((w, i) => (
       <OverviewWindow data={w} key={w.id}>
         <ReactSortable
-          onEnd={e => e.target.focus()}
+          onEnd={e => { e.item.querySelector("button")?.focus(); onDragEnd() }}
+          onStart={e => onDragStart()}
           group="shared"
           selectedClass="sortable-selected"
           className="tab-grid"
           ghostClass="sortable-ghost"
           dragClass="sortable-drag"
           animation={150}
+          scrollSensitivity={100}
           //@ts-ignore
           multiDragKey="Alt"
           multiDrag
           handle=".sortable-handle"
           list={w.tabs}
+          onMove={(e) => {
+            console.log(e.to)
+            if (!x) {
+              e.to.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+                inline: "center",
+              });
+              x = true;
+              setTimeout(() => x = false, 1000)
+            }
+            return true;
+          }}
           setList={(l) => {
-            // todo
+            handleWindowChange(w, l);
           }}
           onSelect={(e) =>
             toggleSelected(parseInt(e.item.id))
@@ -241,3 +269,7 @@ export const Carousel: React.FC<{
     ))}
   </div>
 }
+
+export const Carousel = React.memo(CarouselContent,
+
+)

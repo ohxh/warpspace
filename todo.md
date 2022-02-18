@@ -7,6 +7,9 @@ x Troubleshoot some hook issues
 
 Day 2
 
+- Tab re-assignment function
+- Image scrape invalidation
+- Scape on url change
 - Text scraping
 - basic search ingestion (l1 only, no eviction)
 - Basic search results into dialog
@@ -17,10 +20,7 @@ Day 3
 - Rearranging windows
 - Clean up autoscroll stuff
 
-Day 4:
-
-- Search eviction api
-- Search restore / re-index
+Rearchitected away day 4
 
 Day 5
 
@@ -62,7 +62,7 @@ Day 12
 - [~] Tab selection + dragging
   - [x] Select / drag
   - [~] Update browser state
-  - [ ] Autoscroll, turn off snap
+  - [x] Autoscroll, turn off snap
   - [x] Context menu
   - [ ] Rearrange windows
 - [x] Custom focus control
@@ -73,29 +73,44 @@ Day 12
 Start dogfooding (!)
 
 - [~] Better timing on image scraping, throw away result if tab changes
-- [ ] Prettier fallback for...
+  - [x] Scrape on scroll
+  - [ ] Scrape on navigate
+  - [ ] Invalidate if needed
+- [x] Prettier fallback for...
   - [x] No preview
-  - [ ] No title
+  - [x] No title
   - [x] No icons
+- [~] Browser zoom tracker / inverter
+  - [x] counter zoom
+  - [ ] fix text rendering / jank margins
+  - [ ] Listen for changes
+- [ ] Better pinch zoom tracker
+  - It seems the current scroll dynamics are right
+  - [ ] Only initiate zoom if this motion up _started_ from zero
 - [ ] Naming / saving windows
 - [~] New tab page
 - [ ] Fork sortable
   - [ ] Only select with alt held
+  - [ ] Keyboard control of selection
+- [ ] Thread react-flip-toolkit through sortable for remote updates
 - [~] Refactor / clean up
   - [ ] Standardize message passing format
 - [ ] Basic visual performance
   - [x] Jitter in zoom out
   - [~] Find a way to move minimap without rerendering entire app
+  - [x] Fix tab mouse down effect
   - [ ] Initial tab load time
   - [x] Split vendor files for each entrypoint
   - [ ] Remove unused deps
   - [ ] Application lag
-  - [ ] Troubleshoot hook rerenders
-- [ ] Text scraping
-- [ ] Search index
+  - [x] Troubleshoot hook rerenders
+  - [x] Delay in query return when OS context switching in
+- [x] Text scraping
+- [~] Search index
 - [ ] Search preview extractor, ui
-- [ ] Search index checkpoint / revive
-- [ ] Search UI
+- [x] Search index checkpoint / revive
+- [~] Search UI
+  - [ ] Search results transition on open, arrow key navigation
 
 Give to close friends
 
@@ -133,10 +148,31 @@ Creates context for selection of tabs
 
 Contexts:
 
-- Settings
-- Selection
+x Settings
+x Selection
 
 Style:
 
 - Decide on spacing, font sizes
-- Tailwind plugin for sortable states
+  x Tailwind plugin for sortable states
+
+Context menus
+
+Single:
+
+- Close
+- Move to
+- Add to
+
+How to find windows:
+
+Breakthrough: Run in fullscreen mode, all the time
+Need to replace:
+Forward / back / refresh
+Insert UI into page?
+Maybe eventually...
+
+Links between windows. How to do
+
+Doesn't matter how it's populated, need a suggestions place that's browseable
+Below window zoomed out?

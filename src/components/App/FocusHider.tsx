@@ -2,21 +2,23 @@ import React, { useState, useEffect } from "react";
 
 export const FocusHider: React.FC = ({ children }) => {
   const [chatFocus, setChatFocus] = useState(!document.hidden);
-  console.log("bbb");
+  const [x, setX] = useState(0);
 
   useEffect(() => {
     const handlevis = () => {
       if (document.hidden) {
         setChatFocus(false);
-        console.log("blur");
       } else {
+        // setTimeout(() => {
         setChatFocus(true);
-        console.log("unblur");
+        setX(x => x + 1);
+        // }, 10);
       }
     };
 
     document.addEventListener("visibilitychange", (e) => handlevis());
   }, [chatFocus]);
 
-  return chatFocus ? <>{children}</> : <>No Focus</>;
+  // return <>{children}</>
+  return chatFocus ? <div key={x}>{children}</div> : <>No Focus</>;
 };

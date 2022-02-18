@@ -26,7 +26,6 @@ export const AppSettingsProvider: React.FC = ({ children }) => {
     document.body.classList.add(`theme-${x.colorTheme}`);
     document.body.classList.add(`spacing-${x.colorTheme}`);
     document.body.classList.add(`row-width-${x.tabsPerRow}`);
-    console.warn("Updates", document.body.className);
     setSettings(x);
   };
 

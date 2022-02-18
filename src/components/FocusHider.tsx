@@ -1,18 +1,15 @@
 import { useState, useEffect } from "react";
 import React from "react";
 
-const FocusHider: React.FC = ({ children }) => {
+export const FocusHider: React.FC = ({ children }) => {
   const [chatFocus, setChatFocus] = useState(!document.hidden);
-  console.log("bbb");
 
   useEffect(() => {
     const handlevis = () => {
       if (document.hidden) {
         setChatFocus(false);
-        console.log("blur");
       } else {
         setChatFocus(true);
-        console.log("unblur");
       }
     };
 

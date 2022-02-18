@@ -14,7 +14,6 @@ export interface CrunchOptions {
 export async function crunchPreview(dataUrl: string, options: CrunchOptions) {
   return new Promise<string>(async (resolve) => {
     var t0 = performance.now();
-    console.log("Start: ", performance.now() - t0);
 
     // Todo: faster way to draw dataurl to canvas
     const img = await createImageBitmap(await dataURLtoBlob(dataUrl));
@@ -39,13 +38,11 @@ export async function crunchPreview(dataUrl: string, options: CrunchOptions) {
 
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    console.log("Draw image: ", performance.now() - t0);
     var t0 = performance.now();
 
     //Finish off with a hermite filter to avoid text artifacts
     HermiteFilterResize(canvas, width, height);
 
-    console.log("Hermite filter: ", performance.now() - t0);
     var t0 = performance.now();
 
     const resized = await canvas.convertToBlob({
@@ -55,10 +52,8 @@ export async function crunchPreview(dataUrl: string, options: CrunchOptions) {
 
     const res = await toDataURL(resized);
 
-    console.log("Finish: ", performance.now() - t0);
     var t0 = performance.now();
 
-    console.log("Size: ", (res.length * 2) / 1024 + "kb");
     resolve(res);
   });
 }

@@ -48,9 +48,6 @@ export interface ChromeTabState {
 }
 
 export interface Page {
-  /** Warpspace id, *not* chrome one. More efficient in search index. */
-  id: number;
-
   status: "full";
   url: string;
 
@@ -58,6 +55,8 @@ export interface Page {
   crawl: PageCrawl;
 
   activeAt: Date;
+
+  searchId?: number;
 }
 
 /** Visit that is ongoing */
@@ -82,6 +81,10 @@ export interface ActiveVisit {
   state: ChromeTabState;
 
   openedAt: Date;
+
+  isNewTabPage?: boolean;
+
+  searchId?: number;
 }
 
 export interface SuspendedVisit {
@@ -161,15 +164,15 @@ export type WWindow = FullWindow | AnonymousWindow;
 
 export class WarpspaceDatabase extends Dexie {
   visits!: Dexie.Table<Visit, number>;
-  pages!: Dexie.Table<Page, number>;
+  pages!: Dexie.Table<Page, string>;
   windows!: Dexie.Table<WWindow, number>;
 
   constructor() {
     super("WarpspaceDatabase");
     this.version(1).stores({
-      visits: "&id, activeAt, status",
-      pages: "&url, activeAt, status",
-      windows: "&id, activeAt, status",
+      visits: "&id, activeAt, status, searchId",
+      pages: "&url, activeAt, status, searchId",
+      windows: "&id, activeAt, status, searchId",
     });
   }
 }

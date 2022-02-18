@@ -23,8 +23,8 @@ export const StarIcon2: React.FC<{}> = ({ }) => {
     setPingingImmediate(true)
   }
   return <button onClick={() => { if (ticked) setTicked(!ticked); else tick(); }} className="relative px-1 py-1 rounded-sm active:bg-gray-100">
-    {!ticked && <StarIcon className="w-h h-5 text-gray-500" />}
-    {ticked && <StarIconFilled className="w-h h-5 text-yellow" />}
+    {!ticked && <StarIcon className="w-4 h-4 text-gray-500" />}
+    {ticked && <StarIconFilled className="w-4 h-4 text-yellow" />}
     {pinging && <div className="absolute inset-0 p-1"><StarIconFilled className="m-auto w-h h-5 text-yellow animate-ping" /></div>}
   </button>
 }
@@ -37,15 +37,15 @@ export const OverviewWindow: React.FC<{ data: HydratedWindow }> = ({ data, child
     // `window` class adds complicated styling from window.css to deal with
     // consistent tab sizes, as determined by the window grid and elsewhere
     className="snap-center window mt-8">
-    <div className="pb-8 flex items-baseline">
-      <EditableText placeholder="Untitled window" value={title} onChange={setTitle} />
+    <div className="pb-10 flex items-baseline space-x-4">
+      <EditableText placeholder="Untitled space" value={title} onChange={setTitle} />
       {/* : <h1 className="text-4xl text-gray-400 ">Unnamed Window</h1>} */}
       <div className="flex-1" />
       <div className="group text-[15px] text-gray-600 transition-opacity  flex items-center">
 
-        <button className="px-1 py-1 rounded-sm active:bg-gray-100"><DotsHorizontalIcon className="w-h h-5 text-gray-500" /></button>
+        <button className="px-1 py-1 rounded-sm active:bg-gray-100"><DotsHorizontalIcon className="w-4 h-4 text-gray-500" /></button>
         <StarIcon2 />
-        <button className="px-1 py-1 rounded-sm active:bg-gray-100"><XIcon className="w-h h-5 text-gray-500" /></button>
+        <button className="px-1 py-1 rounded-sm active:bg-gray-100"><XIcon className="w-4 h-4 text-gray-500" /></button>
       </div>
 
     </div>

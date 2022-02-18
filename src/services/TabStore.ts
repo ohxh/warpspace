@@ -17,6 +17,7 @@ import {
 } from "./Database";
 import { ImageStore } from "./ImageStore";
 import { info } from "./Logging";
+import { SearchService } from "./search/Search";
 
 function makeid(length: number) {
   var result = "";
@@ -29,8 +30,6 @@ function makeid(length: number) {
   return result;
 }
 
-console.log(makeid(5));
-
 export type HydratedWindow = WWindow & {
   tabs: ActiveVisit[];
   chromeId: number;
@@ -38,6 +37,7 @@ export type HydratedWindow = WWindow & {
 
 export class TabStore {
   imageStore: ImageStore;
+  searchIndex: SearchService;
 
   constructor(x: ImageStore) {
     this.imageStore = x;
@@ -51,12 +51,24 @@ export class TabStore {
     chrome.tabs.onUpdated.addListener(this.updateTab);
     chrome.tabs.onAttached.addListener(this.attachTab);
     chrome.tabs.onActivated.addListener(this.activateTab);
-    chrome.runtime.onMessage.addListener((m) => {
+    chrome.runtime.onMessage.addListener((m, sender, sendResponse) => {
       if (m.event === "request-capture") {
         console.warn("capture requested");
         this.captureTab();
       }
+      if (m.event === "new-tab-open") {
+        this.newTabOpen(sender.tab!.id!);
+      }
+      if (m.event === "content-scraped") {
+        this.indexTextContent(sender.tab!.id!, m.data);
+      }
+      if (m.event === "request-search") {
+        this.searchIndex.processSearch(m.data).then(sendResponse);
+        return true;
+      }
     });
+
+    this.searchIndex = new SearchService(this);
   }
 
   stateChanged: WarpspaceEvent<[]> = new WarpspaceEvent();
@@ -71,8 +83,54 @@ export class TabStore {
   tabs: Record<number, ActiveVisit> = {};
   state: HydratedWindow[] = [];
 
+  previewCaptureLastInvalidatedAt = Date.now();
+
+  processSearch = async (query: string, sendResponse: (x: any) => void) => {
+    sendResponse(await this.searchIndex.processSearch(query));
+  };
+
+  indexTextContent = async (chromeId: number, content: string) => {
+    const tab = this.tabs[chromeId];
+    const searchId = await this.searchIndex.indexDocument({
+      title: tab.metadata.title,
+      url: tab.metadata.url,
+      body: content,
+    });
+
+    console.log(
+      "verify pages",
+      await db.pages.toArray(),
+      hashCode(tab.url || "")
+    );
+
+    const oldPage = await db.pages.get(tab.url || "");
+    const oldVisit = await db.visits.get(tab.id);
+
+    console.log("!", await db.visits.update(tab.id, { searchId: searchId }));
+    await db.pages.update(tab.url || "", { searchId });
+
+    const newVisit = await db.visits.get(tab.id);
+
+    console.log({ oldPage, oldVisit, newVisit });
+
+    if (oldPage?.searchId !== undefined)
+      this.searchIndex.removeDocument(oldPage.searchId);
+    //@ts-ignore
+    if (oldVisit?.searchId !== undefined)
+      //@ts-ignore
+      this.searchIndex.removeDocument(oldVisit.searchId);
+  };
+
+  newTabOpen = (chromeId: number) => {
+    const tab = this.tabs[chromeId];
+    tab.isNewTabPage = true;
+    db.visits.update(tab.id, {
+      isNewTabPage: true,
+    });
+  };
+
   addTab = (tab: chrome.tabs.Tab) => {
-    console.log("addTab");
+    console.log("addTab", tab);
     if (
       tab.id === undefined ||
       tab.id === null ||
@@ -141,8 +199,6 @@ export class TabStore {
 
     if (tab.url) {
       var newPage: Page = {
-        id: hashCode(tab.url || ""),
-
         status: "full",
         url: tab.url!,
         crawl,
@@ -319,7 +375,7 @@ export class TabStore {
         db.visits.put(closingTab);
       }
 
-      db.pages.update(hashCode(storedTab.url), { activeAt: new Date() });
+      db.pages.update(storedTab.url, { activeAt: new Date() });
     } else {
       db.visits.delete(storedTab.id);
     }
@@ -343,9 +399,7 @@ export class TabStore {
       db.visits.update(t.id, { position: t.position });
     });
 
-    // console.log("TABS BEFORE SPLICE", newStoredWindow.tabs);
     newStoredWindow.tabs.splice(attachInfo.newPosition, 0, storedTab);
-    // console.log("TABS AFTER SPLICE", newStoredWindow.tabs);
 
     newStoredWindow.tabs.forEach((t, i) => {
       t.position.index = i;
@@ -361,7 +415,7 @@ export class TabStore {
   };
 
   addWindow = (window: chrome.windows.Window) => {
-    console.log("addWindow, id is ", window.id);
+    console.log("addWindow");
     const storedWindow: AnonymousWindow = {
       id: this.totalWindows++,
       chromeId: window.id!,
@@ -448,15 +502,29 @@ export class TabStore {
         lastFocusedWindow: true,
       })
     )[0];
-    var im = await captureVisibleTab({ windowId: tab.windowId });
+    var im = await captureVisibleTab({ windowId: tab.windowId }, (partial) => {
+      const key = makeid(10);
+      this.imageStore.store(key, im);
+
+      const cur = this.tabs[tab.id!];
+
+      cur.state.active = true;
+
+      cur.crawl = {
+        ...cur.crawl,
+        lod: 1,
+        previewImage: key,
+      };
+
+      db.visits.update(cur.id, {
+        crawl: cur.crawl,
+        state: cur.state,
+      });
+    });
 
     const key = makeid(10);
     await this.imageStore.store(key, im);
 
-    console.log("Total time: ", performance.now() - t0);
-    const prev = this.windows[tab.windowId].tabs.find(
-      (n) => n.state.active === true
-    );
     const cur = this.tabs[tab.id!];
 
     cur.state.active = true;
@@ -467,31 +535,25 @@ export class TabStore {
       previewImage: key,
     };
 
-    console.log("Stored image", key, im);
-
     db.visits.update(cur.id, {
       crawl: cur.crawl,
       state: cur.state,
     });
-    console.log(cur.metadata.title, " is now active");
-    if (prev) {
-      prev.state.active = false;
-      db.visits.update(prev.id, {
-        state: prev.state,
-      });
-    }
   };
 
   activateTab = async (activeInfo: chrome.tabs.TabActiveInfo) => {
+    this.previewCaptureLastInvalidatedAt = Date.now();
+    const workStartedAt = Date.now();
     setTimeout(async () => {
       var t0 = performance.now();
-      console.log("activateTab ", activeInfo.tabId, activeInfo.windowId);
-      var im = await captureVisibleTab({ windowId: activeInfo.windowId });
+      var im = await captureVisibleTab(
+        { windowId: activeInfo.windowId },
+        () => {}
+      );
 
       const key = makeid(10);
       await this.imageStore.store(key, im);
 
-      console.log("Total time: ", performance.now() - t0);
       const prev = this.windows[activeInfo.windowId].tabs.find(
         (n) => n.state.active === true
       );
@@ -505,13 +567,10 @@ export class TabStore {
         previewImage: key,
       };
 
-      console.log("Stored image", key, im);
-
       db.visits.update(cur.id, {
         crawl: cur.crawl,
         state: cur.state,
       });
-      console.log(cur.metadata.title, " is now active");
       if (prev) {
         prev.state.active = false;
         db.visits.update(prev.id, {
