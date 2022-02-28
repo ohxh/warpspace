@@ -16,7 +16,16 @@ export const FocusHider: React.FC = ({ children }) => {
       }
     };
 
+    const handleZoomOut = (m: MessageEvent) => {
+      if (m.data.event === "exit-warpspace") {
+        setChatFocus(false);
+        setTimeout(() => setChatFocus(true));
+        setX(x => x + 1)
+      }
+    }
+
     document.addEventListener("visibilitychange", (e) => handlevis());
+    window.addEventListener("message", (m) => handleZoomOut(m));
   }, [chatFocus]);
 
   // return <>{children}</>

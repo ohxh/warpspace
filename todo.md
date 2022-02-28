@@ -1,61 +1,3 @@
-In order:
-Day 1
-
-x Finish component restructure
-x Troubleshoot some hook issues
-~ Redo image scraping criteria, eviction
-
-Day 2
-
-- Tab re-assignment function
-- Image scrape invalidation
-- Scape on url change
-- Text scraping
-- basic search ingestion (l1 only, no eviction)
-- Basic search results into dialog
-
-Day 3
-
-- Add window saving / star-ing api
-- Rearranging windows
-- Clean up autoscroll stuff
-
-Rearchitected away day 4
-
-Day 5
-
-- Nice search results w/ previews, click to open
-
-Day 6
-
-- Fork sortable, make desired changes
-- Search drag to window
-- Tab context menu contents + implementation where possible
-
-Day 8
-
-- New tab page
-- Placeholder previews for new tab, chrome:// page
-
-Day 9
-
-- Search windows as well
-- Notes
-
-Day 10
-
-- Redo settings
-- Rebindable shortcuts for common actions
-- Enable / disable for gestures
-
-Day 11
-
-- Privacy settings
-- Blacklist schemes
-- Delete history
-
-Day 12
-
 - Logo
 - Marketing site landing page
 
@@ -74,8 +16,8 @@ Start dogfooding (!)
 
 - [~] Better timing on image scraping, throw away result if tab changes
   - [x] Scrape on scroll
-  - [ ] Scrape on navigate
-  - [ ] Invalidate if needed
+  - [x] Scrape on navigate
+  - [~] Invalidate if needed
 - [x] Prettier fallback for...
   - [x] No preview
   - [x] No title
@@ -83,14 +25,16 @@ Start dogfooding (!)
 - [~] Browser zoom tracker / inverter
   - [x] counter zoom
   - [ ] fix text rendering / jank margins
-  - [ ] Listen for changes
+  - [x] Listen for changes
 - [ ] Better pinch zoom tracker
   - It seems the current scroll dynamics are right
-  - [ ] Only initiate zoom if this motion up _started_ from zero
+  - [x] Only initiate zoom if this motion up _started_ from zero
+  - [ ] Account for max zoom in
+  - [ ] Account for threshold to begin zoom
 - [ ] Naming / saving windows
 - [~] New tab page
-- [ ] Fork sortable
-  - [ ] Only select with alt held
+- [x] Fork sortable
+  - [x] Only select with alt held
   - [ ] Keyboard control of selection
 - [ ] Thread react-flip-toolkit through sortable for remote updates
 - [~] Refactor / clean up
@@ -111,6 +55,11 @@ Start dogfooding (!)
 - [x] Search index checkpoint / revive
 - [~] Search UI
   - [ ] Search results transition on open, arrow key navigation
+- [ ] Finalize + clean up data schemas
+- [ ] Fix crunchpreview dealing with aspect ratio
+- [ ] Tune crunchpreview
+- [ ] Persist data
+- [ ] Make logo
 
 Give to close friends
 
@@ -176,3 +125,16 @@ Links between windows. How to do
 
 Doesn't matter how it's populated, need a suggestions place that's browseable
 Below window zoomed out?
+
+Capture timing:
+
+Do everything in child frames (except own) and pass up a message if top != self
+Scroll (pass in true as last argument to capture, not bubble)
+Click
+Media load
+Message from child frame
+Some kind of network snoop
+_not_ mouse move
+
+-> Pass this all to top-level controller for debounce.
+Maybe semantic handlers (wheel distance)

@@ -85,6 +85,8 @@ export interface ActiveVisit {
   isNewTabPage?: boolean;
 
   searchId?: number;
+
+  warpspaceOpen: boolean;
 }
 
 export interface SuspendedVisit {
@@ -170,9 +172,9 @@ export class WarpspaceDatabase extends Dexie {
   constructor() {
     super("WarpspaceDatabase");
     this.version(1).stores({
-      visits: "&id, activeAt, status, searchId",
-      pages: "&url, activeAt, status, searchId",
-      windows: "&id, activeAt, status, searchId",
+      visits: "&id, chromeId, activeAt, status, searchId",
+      pages: "&url, chromeId, activeAt, status, searchId",
+      windows: "&id, chromeId, activeAt, status, searchId",
     });
   }
 }

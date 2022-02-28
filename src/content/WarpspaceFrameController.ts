@@ -1,8 +1,8 @@
 import { debug, info } from "../services/Logging";
 
 /** Amount zoomed out from baseline before entering warpsace. */
-const ENTER_WARPSPACE_THRESHOLD = 10;
-const EXIT_WARPSPACE_THRESHOLD = -10;
+const ENTER_WARPSPACE_THRESHOLD = 1;
+const EXIT_WARPSPACE_THRESHOLD = -1;
 
 /** Duration in ms to block zoom events */
 const EXIT_WARPSPACE_ZOOM_BLOCK = 500;
@@ -24,6 +24,7 @@ export class WarpspaceFrameController {
 
   /** Current estimated pinch zoom */
   pinchZoomLevel = 0;
+  scrollStartPinchZoomLevel = 0;
 
   zoomBlocked = false;
   zoomBlockTimeout: number | undefined = undefined;
@@ -56,33 +57,54 @@ export class WarpspaceFrameController {
       //@ts-ignore
       if (m.data["event"] === "exit-warpspace") this.exitWarpspace();
     });
+
+    chrome.runtime.onMessage.addListener((message, sender) => {
+      if (message.type === "enter-warpspace") this.enterWarpspace();
+    });
   }
+
+  handlePinch = debounce(
+    () => (this.scrollStartPinchZoomLevel = this.pinchZoomLevel),
+    200
+  );
 
   onWheel = (e: WheelEvent) => {
     //Pinch zoom gestures come in as ctrl + scroll for backwards compatibility
     if (e.ctrlKey) {
-      if (!this.warpspaceOpen) {
-        this.pinchZoomLevel += e.deltaY;
-
-        if (this.pinchZoomLevel > ENTER_WARPSPACE_THRESHOLD) {
-          this.enterWarpspace();
-        }
-      } else {
-        // Ideally events are caught in the iframe, but if some slip through:
-        this.pinchZoomLevel += e.deltaY;
-        if (this.pinchZoomLevel < EXIT_WARPSPACE_THRESHOLD) {
-          this.exitWarpspace();
-        }
-      }
       if (this.zoomBlocked) {
         // No pinch to zoom inside warpspace at all
         e.preventDefault();
+      } else {
+        this.pinchZoomLevel += e.deltaY;
         if (this.pinchZoomLevel > 0) this.pinchZoomLevel = 0;
+
+        // Do our debounce stuff
+        if (e.deltaY >= 0) this.handlePinch();
+        else this.scrollStartPinchZoomLevel = this.pinchZoomLevel;
+
+        console.warn(
+          e.deltaY > ENTER_WARPSPACE_THRESHOLD,
+          this.scrollStartPinchZoomLevel == 0
+        );
+        if (
+          e.deltaY > ENTER_WARPSPACE_THRESHOLD &&
+          this.scrollStartPinchZoomLevel == 0
+        ) {
+          this.enterWarpspace();
+        } else if (e.deltaY < EXIT_WARPSPACE_THRESHOLD) {
+          this.exitWarpspace();
+        }
       }
+      console.log(
+        this.pinchZoomLevel,
+        this.scrollStartPinchZoomLevel,
+        e.deltaY
+      );
     }
   };
 
   enterWarpspace = () => {
+    if (this.warpspaceOpen) return;
     this.frame.contentWindow!.postMessage({ event: "enter-warpspace" }, "*");
     this.pinchZoomLevel = 0;
     this.warpspaceOpen = true;
@@ -97,6 +119,7 @@ export class WarpspaceFrameController {
   };
 
   exitWarpspace = () => {
+    if (!this.warpspaceOpen) return;
     this.pinchZoomLevel = 0;
     this.warpspaceOpen = false;
     // this.frame.style.opacity = "0";
@@ -126,4 +149,12 @@ export class WarpspaceFrameController {
   //   if (msg.message == "toggle_warpspace")
   //     warpspaceOpen ? exitWarpspace() : enterWarpspace();
   // });
+}
+
+function debounce(func: () => void, timeout = 500) {
+  let timer: NodeJS.Timeout;
+  return () => {
+    clearTimeout(timer);
+    timer = setTimeout(func, timeout);
+  };
 }

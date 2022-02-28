@@ -1,9 +1,9 @@
 * {
   --window-target-gap: 6vw;
   --window-max-width: 80vw;
-  --tab-max-width: 240px;
+  --tab-max-width: 15rem;
 
-  --tab-grid-gap: 18px;
+  --tab-grid-gap: 1.125rem;
 
   --carousel-edge-padding: calc(50vw - var(--window-max-width) / 2);
 

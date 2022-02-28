@@ -104,6 +104,6 @@
   transform-origin: var(--left) var(--top);
   z-index: 99999999999;
   position: relative;
-  animation: 0.18s 0s zoomout;
+  animation: zoomout 0.2s 0s;
   opacity: 1;
 }

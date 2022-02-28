@@ -10,8 +10,8 @@ import { AppSettingsProvider } from "./components/new/Settings/AppSettingsContex
 const Popup = () => {
   chrome.topSites.get(console.warn)
   return <div>
-    <h1 className="text-5xl mx-auto text-center">Warpspace</h1>
-    <div className="fixed inset-0">
+    <h1 className="text-5xl mx-auto text-center fade-in">Warpspace</h1>
+    <div className="fixed inset-0 mt-[10vh] mx-auto w-1/2 min-w-[48rem] ">
       <SearchBox />
     </div>
     <div className="max-w-2xl mx-auto pt-[50vh] flex flex-wrap gap-4">

@@ -60,7 +60,7 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
 
   const [override, setOverride, setOverrideInstant] = useDebounce<
     HydratedWindow[] | undefined
-  >(undefined, 1000);
+  >(undefined, 1600);
 
   const handleWindowChange = useCallback((w: HydratedWindow, updated: ActiveVisit[]) => {
     // console.log("HandleWindowChange")
@@ -134,12 +134,15 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
             onDragStart={startScroll}
             onDragEnd={stopScroll}
 
-
             toggleSelected={toggleSelected}
             currentTab={currentTab}
           />
         </div>
         <Minimap
+          pingVisible={() => {
+            setMinimapVisible(true);
+            setMinimapVisibleDebounce(false);
+          }}
           minimapVisible={minimapVisible}
           browserState={fullWindows}
           scrollState={scroll}

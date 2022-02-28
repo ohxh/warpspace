@@ -66,6 +66,43 @@ export class TabStore {
         this.searchIndex.processSearch(m.data).then(sendResponse);
         return true;
       }
+      if (m.event === "register-warpspace-open") {
+        this.previewCaptureLastInvalidatedAt = Date.now();
+        db.visits
+          .where("chromeId")
+          .equals(sender.tab!.id!)
+          .toArray()
+          .then((t) => {
+            console.warn("register");
+            if (t[0]) db.visits.update(t[0].id, { warpspaceOpen: true });
+            console.info(
+              "INFO: ",
+              "warpspace open",
+              (t[0] as ActiveVisit).metadata.title
+            );
+          })
+          .catch((e) => console.error(e));
+      }
+      if (m.event === "register-warpspace-closed") {
+        this.previewCaptureLastInvalidatedAt = Date.now();
+        db.visits
+          .where("chromeId")
+          .equals(sender.tab!.id!)
+          .toArray()
+          .then((t) => {
+            if (t[0])
+              db.visits.update(t[0].id, {
+                warpspaceOpen: false,
+                warpspaceLastOpen: new Date(),
+              });
+            console.info(
+              "INFO: ",
+              "warpspace closed",
+              (t[0] as ActiveVisit).metadata.title
+            );
+          })
+          .catch((e) => console.error(e));
+      }
     });
 
     this.searchIndex = new SearchService(this);
@@ -185,6 +222,7 @@ export class TabStore {
       state,
 
       openedAt: new Date(),
+      warpspaceOpen: false,
     };
 
     //Add the tab to the window's object in the correct position
@@ -272,6 +310,7 @@ export class TabStore {
           lod: 3,
         },
         openedAt: new Date(),
+        warpspaceOpen: false,
       };
 
       // Splice this into our in-memory data structures
@@ -502,30 +541,62 @@ export class TabStore {
         lastFocusedWindow: true,
       })
     )[0];
-    var im = await captureVisibleTab({ windowId: tab.windowId }, (partial) => {
-      const key = makeid(10);
-      this.imageStore.store(key, im);
 
-      const cur = this.tabs[tab.id!];
+    console.log("Query tab: ", performance.now() - t0);
+    t0 = performance.now();
 
-      cur.state.active = true;
+    const startTime = Date.now();
 
-      cur.crawl = {
-        ...cur.crawl,
-        lod: 1,
-        previewImage: key,
-      };
+    var im = await captureVisibleTab(
+      { windowId: tab.windowId },
+      async (partial) => {
+        console.log("Partial done: ", performance.now() - t0);
 
-      db.visits.update(cur.id, {
-        crawl: cur.crawl,
-        state: cur.state,
-      });
-    });
+        // if (this.previewCaptureLastInvalidatedAt - startTime > -100) return;
+
+        const key = makeid(10);
+        this.imageStore.store(key, im);
+
+        const cur = this.tabs[tab.id!];
+
+        if (((await db.visits.get(cur.id)) as ActiveVisit).warpspaceOpen)
+          return;
+
+        cur.state.active = true;
+
+        cur.crawl = {
+          ...cur.crawl,
+          lod: 1,
+          previewImage: key,
+        };
+
+        db.visits.update(cur.id, {
+          crawl: cur.crawl,
+          state: cur.state,
+        });
+      }
+    );
+
+    console.error(
+      this.previewCaptureLastInvalidatedAt,
+      this.previewCaptureLastInvalidatedAt > startTime ? " > " : " <= ",
+      startTime,
+      this.previewCaptureLastInvalidatedAt - startTime
+    );
+    // if (this.previewCaptureLastInvalidatedAt - startTime > -100) return;
+
+    console.log("Capturevisibletab: ", performance.now() - t0);
+    t0 = performance.now();
 
     const key = makeid(10);
     await this.imageStore.store(key, im);
 
+    console.log("store: ", performance.now() - t0);
+    t0 = performance.now();
+
     const cur = this.tabs[tab.id!];
+
+    if (((await db.visits.get(cur.id)) as ActiveVisit).warpspaceOpen) return;
 
     cur.state.active = true;
 
@@ -539,6 +610,9 @@ export class TabStore {
       crawl: cur.crawl,
       state: cur.state,
     });
+
+    console.log("write to dexie: ", performance.now() - t0);
+    t0 = performance.now();
   };
 
   activateTab = async (activeInfo: chrome.tabs.TabActiveInfo) => {

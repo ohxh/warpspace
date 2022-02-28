@@ -28,7 +28,7 @@ export const BrandMenu: React.FC<{}> = ({ }) => {
       leaveFrom="transform opacity-100 scale-100"
       leaveTo="transform opacity-0 scale-95"
     >
-      <Menu.Items className="z-10 bg-[#fff] bg-opacity-10 border backdrop-blur-md origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-xl focus:outline-none">
+      <Menu.Items className="z-10 bg-[#fff] bg-opacity-100 border origin-top-left absolute left-0 mt-2 w-56 rounded-md shadow-xl focus:outline-none">
         <div className="px-4 py-3">
           <p className="text-sm">Signed in as</p>
           <p className="text-sm font-medium text-gray-900 truncate">tom@example.com</p>

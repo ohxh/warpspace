@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { SearchModal } from "../new/Search/SearchModal";
 import { SettingsPanel } from "../new/Settings/SettingsPanel";
 import { ShortcutsPanel } from "../new/Settings/ShortcutsPanel";
-import { BrandMenu } from "./BrandMenu";
+import { BrandMenu } from "./Header/BrandMenu";
 
 const commands = [{
   name: "Foo",

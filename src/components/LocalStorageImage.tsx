@@ -9,13 +9,13 @@ const x: ImageStore = new ImageStore();
 
 export const LocalStorageImage: React.FC<LocalStorageImageProps> = ({ srcKey, iref, ...props }) => {
 
-
-  const [img, setImg] = useState<string>();
+  const [img, setImg] = useState<string>("data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
   const result = useEffect(() => {
     (async () => {
-      setImg(srcKey ? await x.get(srcKey) : "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
-
+      setImg((
+        srcKey ? await x.get(srcKey) : "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==")
+        || "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
     })()
-  }, [srcKey])
-  return <img {...props} ref={iref} src={img} />
+  }, [])
+  return <img onError={() => setImg("data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==")} {...props} ref={iref} src={img} />
 }

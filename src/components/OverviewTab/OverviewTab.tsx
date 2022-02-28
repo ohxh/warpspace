@@ -27,11 +27,11 @@ export const OverviewTab: React.FC<{
   tab: ActiveVisit;
   tabRef: (x: HTMLElement | null) => void;
 }> = ({ current, tabRef, tab }) => {
-  const ref = useRef<HTMLDivElement | null>(null);
+  const ref = useRef<HTMLButtonElement | null>(null);
   const imageRef = useRef<HTMLDivElement | null>(null);
   const [zoomingIn, setZoomingInDebounce, setZoomingIn] = useDebounce(
     false,
-    250
+    500
   );
 
   useEffect(() => {
@@ -62,20 +62,24 @@ export const OverviewTab: React.FC<{
     <div key={tab.id} className="tab" id={`${tab.id}`}>
       <div className="selection sortable-selected:bg-highlight sortable-ghost:hidden"></div>
       <OverviewTabContextMenu>
-        <div
-          tabIndex={1}
+        <button
           data-tab-id={tab.id}
           key={tab.id}
           onClick={(e) => {
-            if (e.altKey || e.ctrlKey) return;
+            if (e.altKey || e.ctrlKey || e.shiftKey) return;
             if (current) {
               window.top!.postMessage(
                 { event: "exit-warpspace" },
                 { targetOrigin: "*" }
               );
             } else {
-              chrome.windows.update(tab.chromeWindowId, { focused: true });
-              chrome.tabs.update(tab.chromeId, { active: true });
+              setPress(false);
+              setTimeout(() => {
+                chrome.windows.update(tab.chromeWindowId, { focused: true });
+                chrome.tabs.update(tab.chromeId, { active: true });
+              },
+              )
+
             }
           }}
           ref={(e) => {
@@ -88,12 +92,15 @@ export const OverviewTab: React.FC<{
             onMouseDown={(e) => {
               setPress(true);
             }}
-            onMouseMove={(e) => setPress(false)}
+            onMouseMove={(e) => {
+              if (e.movementX ** 2 + e.movementY ** 2 > 1)
+                setPress(false)
+            }}
             ref={imageRef}
-            className={`${tab.position.pinned ? "" : "sortable-handle"
-              }  relative bg-gray-100 aspect-[16/9] 
+            className={`${tab.position.pinned ? "" : "sortable-handle"}
+              relative bg-gray-100 aspect-[16/9] 
               w-full rounded-md sortable-drag:group-focus:ring-0 group-active:ring-0 
-              sortable-drag:group-focus:ring-offset-0 group-focus:ring-1.5 
+              sortable-drag:group-focus:ring-offset-0 group-focus:ring-3
               group-focus:ring-focus ring-offset-background sortable-selected:ring-offset-highlight 
               group-focus:ring-offset-2 group-focus:relative group-focus:z-20`}
           >
@@ -125,7 +132,9 @@ export const OverviewTab: React.FC<{
                 tab.crawl.lod === 1 ? tab.crawl.previewImage || "none" : "none2"
               }
               className={`
-              absolute inset-0 rounded-md object-cover h-full w-full ${zoomingIn ? "zoomout" : ""
+              border border-gray-300
+              absolute inset-0 rounded-md object-cover h-full w-full
+               ${zoomingIn ? "zoomout" : ""
                 }`}
               style={{
                 //@ts-ignore
@@ -138,9 +147,8 @@ export const OverviewTab: React.FC<{
                 "--scale":
                   window.innerWidth /
                   ((imageRef.current?.getBoundingClientRect().right || 1) -
-                    (imageRef.current?.getBoundingClientRect().left || 0)) * 0.8,
-
-                willChange: "scroll-position",
+                    (imageRef.current?.getBoundingClientRect().left || 0)) * 0.75,
+                "willChange": current ? "transform" : ""
               }}
             />
             {current && (
@@ -149,14 +157,19 @@ export const OverviewTab: React.FC<{
             {tab.position.pinned && (
               <button
                 onClick={(e) => e.stopPropagation()}
+
                 className="active:bg-gray-100 p-1 absolute top-1 left-1 z-50 rounded-sm"
               >
                 <LockClosedIcon className="text-gray-900 rounded-full w-3 h-3"></LockClosedIcon>
               </button>
             )}
-            <div className="absolute inset-0 rounded-md border border-gray-300 dark:border-gray-100 sortable-drag:border-gray-400"></div>
+            {/* <div className="absolute inset-0 rounded-md border border-gray-300 dark:border-gray-100 sortable-drag:border-gray-400"></div> */}
             <div className="absolute inset-0 rounded-md shadow-md opacity-30"></div>
-            <div className={`absolute inset-0 rounded-md bg-black sortable-drag:invisible ${press ? "opacity-20" : "opacity-0 delay-150"} transition-opacity duration-[50ms]`}></div>
+            <div className={`absolute inset-0 rounded-md bg-black sortable-drag:invisible 
+            ${press ? "opacity-20" : "opacity-0"} 
+            `}
+            //  ${press ? "opacity-20" : "opacity-0 delay-150"} transition-opacity duration-[50ms]
+            ></div>
             <MultiSelectionDragOverlay />
           </div>
           <div className="relative mt-2">
@@ -164,27 +177,27 @@ export const OverviewTab: React.FC<{
               {tab.metadata.favIconUrl && (
                 <img
                   src={tab.metadata.favIconUrl}
-                  className="mt-[.25rem] w-[1.125rem] h-[1.125rem] rounded-sm "
+                  className="mt-[.0625rem] w-[1.125rem] h-[1.125rem] rounded-sm "
                 ></img>
               )}
               {!tab.metadata.favIconUrl &&
                 !tab.metadata.url &&
                 !tab.isNewTabPage && (
                   <CogIcon
-                    className={`mt-[.25rem] w-[1.125rem] h-[1.125rem] rounded-sm text-focus`}
+                    className={`mt-[.0625rem] w-[1.125rem] h-[1.125rem] rounded-sm text-focus`}
                   />
                 )}
               {!tab.metadata.favIconUrl &&
                 !tab.metadata.url &&
                 tab.isNewTabPage && (
                   <ChromeIcon
-                    className={`mt-[.25rem] w-4 h-4 rounded-sm text-gray-800`}
+                    className={`mt-[.0625rem] w-4 h-4 rounded-sm text-gray-800`}
                   />
                 )}
               {!tab.metadata.favIconUrl && tab.metadata.url && (
-                <WorldIcon className="mt-[.25rem] w-[1.125rem] h-[1.125rem] rounded-sm text-gray-800" />
+                <WorldIcon className="mt-[.0625rem] w-[1.125rem] h-[1.125rem] rounded-sm text-gray-800" />
               )}
-              <span className="flex-1 text-ellipsis whitespace-nowrap overflow-hidden text-[0.9rem] antialiased text-gray-900">
+              <span className="flex-1 text-ellipsis whitespace-nowrap overflow-hidden text-[0.875rem] text-gray-900">
                 {!tab.metadata.url && (tab.isNewTabPage ? "New Tab" : "Chrome")}
                 {tab.metadata.title}
               </span>
@@ -192,8 +205,13 @@ export const OverviewTab: React.FC<{
             <div className="opacity-0 hover:opacity-100 transition-opacity absolute right-0 top-0 bottom-0 flex flex-row items-center pl-6 bg-gradient-to-r from-transparent via-background to-background sortable-drag:hidden sortable-selected:via-highlight sortable-selected:to-highlight">
               <button
                 className="rounded-full p-1 tab-x-button active:bg-gray-100 sortable-selected:active:bg-focus"
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.stopPropagation();
+                  const res = await chrome.tabs.query({ windowId: tab.chromeWindowId, index: tab.position.index + 1 })
+                  if (res[0]) {
+                    // alert(res[0].index)
+                    chrome.tabs.sendMessage(res[0].id!, { type: "enter-warpspace" })
+                  }
                   chrome.tabs.remove(tab.chromeId);
                 }}
               >
@@ -201,7 +219,7 @@ export const OverviewTab: React.FC<{
               </button>
             </div>
           </div>
-        </div>
+        </button>
       </OverviewTabContextMenu>
     </div>
   );

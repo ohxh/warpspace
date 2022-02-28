@@ -1,0 +1,26 @@
+diff --git a/node_modules/sortablejs/modular/sortable.esm.js b/node_modules/sortablejs/modular/sortable.esm.js
+index dfbb17f..e5938dc 100644
+--- a/node_modules/sortablejs/modular/sortable.esm.js
++++ b/node_modules/sortablejs/modular/sortable.esm.js
+@@ -2760,8 +2760,8 @@ function AutoScrollPlugin() {
+     this.defaults = {
+       scroll: true,
+       forceAutoScrollFallback: false,
+-      scrollSensitivity: 30,
+-      scrollSpeed: 10,
++      scrollSensitivity: 300,
++      scrollSpeed: 20,
+       bubbleScroll: true
+     }; // Bind all private methods
+ 
+@@ -3461,9 +3461,7 @@ function MultiDragPlugin() {
+           children = parentEl.children; // Multi-drag selection
+ 
+       if (!dragStarted) {
+-        if (options.multiDragKey && !this.multiDragKeyDown) {
+-          this._deselectMultiDrag();
+-        }
++        if(!this.multiDragKeyDown && !evt.shiftKey) return; // Don't select without a key down
+ 
+         toggleClass(dragEl$1, options.selectedClass, !~multiDragElements.indexOf(dragEl$1));
+ 

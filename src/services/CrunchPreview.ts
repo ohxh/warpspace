@@ -38,21 +38,15 @@ export async function crunchPreview(dataUrl: string, options: CrunchOptions) {
 
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    var t0 = performance.now();
-
     //Finish off with a hermite filter to avoid text artifacts
     HermiteFilterResize(canvas, width, height);
 
-    var t0 = performance.now();
-
     const resized = await canvas.convertToBlob({
       type: "image/webp",
-      quality: 0.3,
+      quality: 1,
     });
 
     const res = await toDataURL(resized);
-
-    var t0 = performance.now();
 
     resolve(res);
   });

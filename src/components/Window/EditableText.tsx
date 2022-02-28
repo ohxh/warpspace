@@ -21,7 +21,7 @@ export const EditableText: React.FC<{
   if (editing)
     return (
       <input
-        className="text-gray-900 placeholder:text-gray-300 text-4xl w-full rounded-sm ring-0 outline-none focus:ring-2 ring-offset-2 ring-focus"
+        className="text-gray-900 placeholder:text-gray-300 text-4xl w-full rounded-sm ring-0 outline-none focus:ring-3 ring-offset-2 ring-focus"
         autoFocus
         placeholder={placeholder}
         value={state}

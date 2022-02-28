@@ -18,17 +18,21 @@ function extractTextContent() {
   return document.body.innerText.replace(/[ \t]+/g, " ").replace(/[\n\r][\n\r]+/g, "\n\n");
 }
 
+chrome.runtime.sendMessage({ event: "request-capture" })
+
 window.addEventListener("DOMContentLoaded", (e) => {
   setTimeout(() => {
     chrome.runtime.sendMessage({ event: "content-scraped", data: extractTextContent() })
+    chrome.runtime.sendMessage({ event: "request-capture" })
   }, 1000)
 })
 
-document.addEventListener("scroll", debounce(() => {
+const handleEv = debounce(() => {
+  console.warn("requested capture")
   chrome.runtime.sendMessage({ event: "request-capture" })
-}))
+});
 
-function debounce(func: () => void, timeout = 10) {
+function debounce(func: () => void, timeout = 200) {
   let timer: NodeJS.Timeout;
   return () => {
     clearTimeout(timer);
@@ -36,7 +40,9 @@ function debounce(func: () => void, timeout = 10) {
   };
 }
 
-// Scrape: 
+const events = ["scroll", "click", "change", "keydown", "animationend", "resize"]
+
+events.forEach(e => window.addEventListener(e, handleEv, { capture: true }))
 
 
 

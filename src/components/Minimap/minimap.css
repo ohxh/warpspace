@@ -1,7 +1,8 @@
 .minimap-window {
   width: calc(var(--window-target-width) / 10);
   max-width: calc(var(--window-max-width) / 10);
-  margin-right: calc(var(--window-target-gap) / 10);
+  padding-right: calc(var(--window-target-gap) / 10 / 2);
+  padding-left: calc(var(--window-target-gap) / 10 / 2);
 }
 
 .minimap-window:last-of-type {

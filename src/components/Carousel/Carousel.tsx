@@ -31,6 +31,10 @@ export const CarouselContent: React.FC<{
       .map((v, i) => [i, v])
       .find(([w, t]) => t >= 0) as [number, number];
 
+    if (location[1] - 6 < 0) {
+      // focus window title
+      return;
+    }
     if (location[1] - 6 >= 0) location[1] -= 6;
 
     tabRefs.current[browserState[location[0]].tabs[location[1]].id].focus({
@@ -84,6 +88,9 @@ export const CarouselContent: React.FC<{
         location[0] -= 1;
         location[1] += 5;
 
+        if (location[1] >= browserState[location[0]].tabs.length)
+          location[1] = browserState[location[0]].tabs.length - 1;
+
         tabRefs.current[browserState[location[0]].tabs[location[1]].id].scrollIntoView({
           behavior: "smooth",
           block: "nearest",
@@ -133,6 +140,12 @@ export const CarouselContent: React.FC<{
           Math.floor(
             Math.min(location[1], browserState[location[0]].tabs.length - 1) / 6
           ) * 6;
+
+        tabRefs.current[browserState[location[0]].tabs[location[1]].id].scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
       }
     } else {
       if (location[1] + 1 < browserState[location[0]].tabs.length) location[1] += 1;
@@ -143,7 +156,6 @@ export const CarouselContent: React.FC<{
     });
 
   };
-
 
   return <div
     onKeyDown={(e) => {
@@ -164,13 +176,12 @@ export const CarouselContent: React.FC<{
         focusDown();
       }
     }}
-    className="min-h-full min-w-full w-max flex py-20"
+    className="min-h-full min-w-full w-max flex py-20 px-[50vw]"
     style={{
       paddingLeft: "var(--carousel-edge-padding)",
       paddingRight: "var(--carousel-edge-padding)",
     }}
   >
-
     {browserState.map((w, i) => (
       <OverviewWindow data={w} key={w.id}>
         <ReactSortable
@@ -183,6 +194,7 @@ export const CarouselContent: React.FC<{
           dragClass="sortable-drag"
           animation={150}
           scrollSensitivity={100}
+          scrollSpeed={10}
           //@ts-ignore
           multiDragKey="Alt"
           multiDrag
@@ -191,11 +203,11 @@ export const CarouselContent: React.FC<{
           onMove={(e) => {
             console.log(e.to)
             if (!x) {
-              e.to.scrollIntoView({
-                behavior: "smooth",
-                block: "nearest",
-                inline: "center",
-              });
+              // e.to.scrollIntoView({
+              //   behavior: "smooth",
+              //   block: "nearest",
+              //   inline: "center",
+              // });
               x = true;
               setTimeout(() => x = false, 1000)
             }
@@ -223,7 +235,7 @@ export const CarouselContent: React.FC<{
           ))}
         </ReactSortable>
 
-        <div className="flex pt-4 space-x-4 w-full border-t mt-4">
+        <div className="flex pt-6 space-x-4 w-full border-t mt-6">
           <a
             className="block tab"
             onClick={() => {

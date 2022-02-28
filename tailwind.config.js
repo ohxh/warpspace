@@ -9,6 +9,33 @@ module.exports = {
   darkMode: 'class', // or 'media' or 'class'
   theme: {
     extend: {
+      borderWidth: {
+        DEFAULT: '0.0625rem',
+        '0': '0',
+        '2': '0.125rem',
+        '3': '0.1875rem',
+        '4': '0.25rem',
+        '6': '0.375rem',
+        '8': '0.5rem',
+      },
+      ringWidth: {
+        '0': '0',
+        '1': '0.0625rem',
+        '2': '0.125rem',
+        '3': '0.1875rem',
+        '4': '0.25rem',
+        '6': '0.375rem',
+        '8': '0.5rem',
+      },
+      ringOffsetWidth: {
+        '0': '0',
+        '1': '0.0625rem',
+        '2': '0.125rem',
+        '3': '0.1875rem',
+        '4': '0.25rem',
+        '6': '0.375rem',
+        '8': '0.5rem',
+      },
       boxShadow: {
         '3xl': 'box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;',
       }
@@ -59,6 +86,11 @@ module.exports = {
       addVariant("sortable-selected", ".sortable-selected &")
       addVariant("sortable-group-drag", ".sortable-selected.sortable-drag &")
       addVariant("sortable-none-dragging", ".sortable-none-dragging &")
+      addUtilities({
+        ".fade-in": {
+          "animation": "fade-in 0.3s"
+        }
+      })
     }),
   ],
 }

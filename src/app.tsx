@@ -6,9 +6,10 @@ import { AppSettingsProvider } from "./components/new/Settings/AppSettingsContex
 import "./components/new/Settings/theme.css";
 import "./style.css";
 
+
 // Hide app unless in active tab
 
-ReactDOM.render(
+let component = ReactDOM.render(
   <React.StrictMode>
     <AppSettingsProvider>
       <FocusHider>
@@ -40,20 +41,37 @@ document.addEventListener(
   { passive: false }
 );
 
-document.body.style.opacity = "0";
+document.body.style.opacity = "0.01";
 
 window.addEventListener("message", (m) => {
   if (m.data.event === "enter-warpspace") {
     document.body.style.opacity = "1";
+    console.warn("message sent")
+    // chrome.runtime.sendMessage({ event: "register-warpspace-open" })
   }
   if (m.data.event === "exit-warpspace") {
-    document.body.style.opacity = "0";
+    // chrome.runtime.sendMessage({ event: "request-capture" })
+    document.body.style.opacity = "0.01";
+    // chrome.runtime.sendMessage({ event: "register-warpspace-closed" })
   }
 });
 
 //@ts-ignore
 chrome.tabs.getZoom((z) => {
   document.documentElement.style.fontSize = 100 / z + "%"
+
+  document.documentElement.style.letterSpacing = .02 * (1 - z) + "em"
+})
+
+let currentTabId = 0;
+
+chrome.tabs.getCurrent((c) => currentTabId = c!.id!);
+
+chrome.tabs.onZoomChange.addListener((z) => {
+  console.warn({ z: z.newZoomFactor })
+  if (z.tabId === currentTabId)
+    document.documentElement.style.fontSize = 100 / z.newZoomFactor + "%"
+  document.documentElement.style.letterSpacing = .02 * (1 - z.newZoomFactor) + "em"
 })
 
 
