@@ -158,6 +158,9 @@ export class TabStore {
       this.searchIndex.removeDocument(oldVisit.searchId);
   };
 
+  /** Register that a new tab is in fact the new tab page
+   * Since it's indistinguishable from chrome system pages to us
+   */
   newTabOpen = (chromeId: number) => {
     const tab = this.tabs[chromeId];
     tab.isNewTabPage = true;
@@ -166,7 +169,7 @@ export class TabStore {
     });
   };
 
-  addTab = (tab: chrome.tabs.Tab) => {
+  addTab = async (tab: chrome.tabs.Tab) => {
     console.log("addTab", tab);
     if (
       tab.id === undefined ||
@@ -522,7 +525,7 @@ export class TabStore {
   };
 
   async getInitialData() {
-    console.log("getInitialData");
+    console.warn("GetInitialData");
     var windows = await chrome.windows.getAll({ populate: true });
     windows.forEach((w) => {
       this.addWindow(w);

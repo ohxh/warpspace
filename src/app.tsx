@@ -30,10 +30,15 @@ document.addEventListener(
     // Pinch zoom gestures come in as ctrl + scroll for backwards compatibility
     if (e.ctrlKey) {
       if (e.deltaY < EXIT_WARPSPACE_THRESHOLD) {
-        window.top!.postMessage(
-          { event: "exit-warpspace" },
-          { targetOrigin: "*" }
-        );
+        document.body.classList.add("leaving-warpspace")
+        setTimeout(() => {
+          window.top!.postMessage(
+            { event: "exit-warpspace" },
+            { targetOrigin: "*" }
+          );
+          setTimeout(() => document.body.classList.remove("leaving-warpspace"), 10)
+
+        }, 130);
       }
       e.preventDefault();
     }

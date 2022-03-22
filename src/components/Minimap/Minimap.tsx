@@ -18,7 +18,7 @@ export const Minimap: React.FC<{
     const [dragging, setDragging] = useState(false);
 
     return <div
-      className={`fixed bottom-2 right-2 transition-opacity duration-300 ${(minimapVisible || dragging) ? "" : "opacity-0"
+      className={`fixed pointer-events-none bottom-2 right-2 transition-opacity duration-300 ${(minimapVisible || dragging) ? "" : "opacity-0"
         }`}
       style={{ height: `${document.body.clientHeight / 10}px` }}
     >
@@ -46,7 +46,7 @@ export const Minimap: React.FC<{
         ghostClass="sortable-ghost"
         dragClass="sortable-drag"
         animation={150}
-        className="flex flex-row items-stretch py-1 pb-4"
+        className="flex flex-row items-stretch py-1 pb-4 "
         style={{
           paddingLeft: "calc(var(--carousel-edge-padding)/10)",
           paddingRight: "calc(var(--carousel-edge-padding)/10)",

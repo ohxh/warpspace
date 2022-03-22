@@ -1,5 +1,4 @@
 import { JSDOM } from "jsdom";
-import RichMarkdownEditor from "rich-markdown-editor";
 // get indices
 
 // split 1 level deep, parse to ele, text

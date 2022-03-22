@@ -16,6 +16,6 @@ export const LocalStorageImage: React.FC<LocalStorageImageProps> = ({ srcKey, ir
         srcKey ? await x.get(srcKey) : "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==")
         || "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
     })()
-  }, [])
+  }, [srcKey])
   return <img onError={() => setImg("data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==")} {...props} ref={iref} src={img} />
 }

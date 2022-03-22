@@ -34,12 +34,15 @@ export class SearchService {
   }
 
   async processSearch(search: string) {
+    const t0 = performance.now();
     const query = parseQuery(search);
 
     const individualTokenResults = await Promise.all([
       ...query.tokens.map((t) => this.index.searchExact(t)),
       ...query.prefixTokens.map((t) => this.index.searchPrefix(t)),
     ]);
+
+    console.warn("Tokens in: ", performance.now() - t0);
 
     const preliminaryScores: Record<number, number> = {};
 
@@ -56,6 +59,8 @@ export class SearchService {
 
     // Get from tabStore
 
+    console.warn("Math in ", performance.now() - t0);
+
     const visits = await db.visits
       .where("searchId")
       .anyOf(finalCandidates)
@@ -64,6 +69,8 @@ export class SearchService {
       .where("searchId")
       .anyOf(finalCandidates)
       .toArray();
+
+    console.warn("Grabbed from db in ", performance.now() - t0);
 
     console.log({
       query,
@@ -79,6 +86,8 @@ export class SearchService {
     const uniquePages = [...pages]
       .filter(Boolean)
       .filter((p) => !visits.some((v) => v.url === p.url));
+
+    console.warn("Search took ", performance.now() - t0);
 
     return [...uniquePages, ...uniqueVisits];
   }

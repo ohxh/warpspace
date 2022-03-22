@@ -4,12 +4,13 @@ import { LocalStorageImage } from "../LocalStorageImage";
 
 
 
-export const SearchResult: React.FC<{ tab: ActiveVisit }> = ({ tab }) => {
+export const SearchResult: React.FC<{ tab: ActiveVisit, highlighted: boolean }> = ({ tab, highlighted }) => {
   return <>
-    <div className="flex gap-x-4 group w-full px-4 py-2 max-w-full">
+    <div className={`flex gap-x-4 group w-full px-4 py-2 max-w-full ${highlighted ? "bg-gray-100" : ""}`}>
       <div>
         <div className="tab cursor-pointer group-active:opacity-80">
           <LocalStorageImage srcKey={tab.crawl.lod === 1 ? (tab.crawl.previewImage || "none") : "none2"} alt="" className={`bg-gray-100 aspect-[16/9] w-full border border-gray-300 rounded-md  object-cover`} />
+          <div className={`absolute inset-0 rounded-md transition-opacity shadow-md ${highlighted ? "opacity-60" : "opacity-30"}`}></div>
         </div>
       </div>
 
@@ -21,7 +22,7 @@ export const SearchResult: React.FC<{ tab: ActiveVisit }> = ({ tab }) => {
             {tab.metadata.title ?? "New Tab"}
           </span>
         </div>
-        <div className="text-sm text-gray-500 mb-1 text-ellipsis whitespace-nowrap overflow-hidden">{tab.url}</div>
+        <div className="text-sm text-gray-500 mb-1 text-ellipsis whitespace-nowrap overflow-hidden">{tab.metadata.url || "no url"}</div>
         <p className="text-gray-700 text-sm max-lines-2 overflow-hidden">
           Lorem ipsum dolor sit amet, <b>consectetur adipiscing elit</b>, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
         </p>
@@ -32,9 +33,9 @@ export const SearchResult: React.FC<{ tab: ActiveVisit }> = ({ tab }) => {
 
 
 
-export const ShortSearchResult: React.FC<{ tab: ActiveVisit }> = ({ tab }) => {
+export const ShortSearchResult: React.FC<{ tab: ActiveVisit, highlighted: boolean }> = ({ tab, highlighted }) => {
   return <>
-    <div className="flex gap-x-4 group w-full px-4 py-2 max-w-full items-center">
+    <div className={`flex gap-x-4 group w-full px-4 py-2 max-w-full items-center ${highlighted ? "bg-gray-100" : ""}`}>
       {tab.metadata.favIconUrl && <img src={tab.metadata.favIconUrl} alt="hi" className="w-4 h-4 rounded-sm"></img>}
       <span className="flex-1 text-ellipsis whitespace-nowrap overflow-hidden text-[15px] antialiased" >
 

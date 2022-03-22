@@ -54,7 +54,10 @@ Start dogfooding (!)
 - [ ] Search preview extractor, ui
 - [x] Search index checkpoint / revive
 - [~] Search UI
-  - [ ] Search results transition on open, arrow key navigation
+  - [x] Search results transition on open, arrow key navigation
+  - [ ] Windows in search
+- [ ] Bug: Pointer events mismatched with opacity (sometimes)
+- [ ] Maybe bug: inifnite cpu loop
 - [ ] Finalize + clean up data schemas
 - [ ] Fix crunchpreview dealing with aspect ratio
 - [ ] Tune crunchpreview

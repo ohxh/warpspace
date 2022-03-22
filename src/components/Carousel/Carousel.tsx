@@ -185,6 +185,7 @@ export const CarouselContent: React.FC<{
     {browserState.map((w, i) => (
       <OverviewWindow data={w} key={w.id}>
         <ReactSortable
+
           onEnd={e => { e.item.querySelector("button")?.focus(); onDragEnd() }}
           onStart={e => onDragStart()}
           group="shared"

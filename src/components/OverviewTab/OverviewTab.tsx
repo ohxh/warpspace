@@ -68,11 +68,13 @@ export const OverviewTab: React.FC<{
           onClick={(e) => {
             if (e.altKey || e.ctrlKey || e.shiftKey) return;
             if (current) {
+
               window.top!.postMessage(
                 { event: "exit-warpspace" },
                 { targetOrigin: "*" }
               );
             } else {
+              (document.activeElement as HTMLElement)?.blur()
               setPress(false);
               setTimeout(() => {
                 chrome.windows.update(tab.chromeWindowId, { focused: true });
@@ -134,6 +136,7 @@ export const OverviewTab: React.FC<{
               className={`
               border border-gray-300
               absolute inset-0 rounded-md object-cover h-full w-full
+              ${current ? " current " : ""}
                ${zoomingIn ? "zoomout" : ""
                 }`}
               style={{
@@ -148,6 +151,11 @@ export const OverviewTab: React.FC<{
                   window.innerWidth /
                   ((imageRef.current?.getBoundingClientRect().right || 1) -
                     (imageRef.current?.getBoundingClientRect().left || 0)) * 0.75,
+                //@ts-ignore
+                "--scaleb":
+                  window.innerWidth /
+                  ((imageRef.current?.getBoundingClientRect().right || 1) -
+                    (imageRef.current?.getBoundingClientRect().left || 0)),
                 "willChange": current ? "transform" : ""
               }}
             />
@@ -198,8 +206,9 @@ export const OverviewTab: React.FC<{
                 <WorldIcon className="mt-[.0625rem] w-[1.125rem] h-[1.125rem] rounded-sm text-gray-800" />
               )}
               <span className="flex-1 text-ellipsis whitespace-nowrap overflow-hidden text-[0.875rem] text-gray-900">
-                {!tab.metadata.url && (tab.isNewTabPage ? "New Tab" : "Chrome")}
-                {tab.metadata.title}
+                {tab.crawl.lod === 1 ? tab.crawl.previewImage || "none" : "none2"}
+                {/* {!tab.metadata.url && (tab.isNewTabPage ? "New Tab" : "Chrome")}
+                {tab.metadata.title} */}
               </span>
             </div>
             <div className="opacity-0 hover:opacity-100 transition-opacity absolute right-0 top-0 bottom-0 flex flex-row items-center pl-6 bg-gradient-to-r from-transparent via-background to-background sortable-drag:hidden sortable-selected:via-highlight sortable-selected:to-highlight">

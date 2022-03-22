@@ -28,13 +28,11 @@ export const SearchBox: React.FC<{}> = ({ }) => {
 
   const lastResults = useRef(results);
 
-  useEffect(() => {
-    if (results.result?.length)
-      lastResults.current = results
-  }, [results.result])
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
 
   return <Flipper
-    flipKey={results.result?.length === 0 ? lastResults.current.result : results.result}
+    // flipKey={results.result?.length === 0 ? lastResults.current.result : results.result}
+    flipKey={results}
     spring={{
       stiffness: 7000,
       damping: 200
@@ -42,15 +40,42 @@ export const SearchBox: React.FC<{}> = ({ }) => {
   >
     <div className="h-2 border-t border-r border-l border-gray-300 rounded-t-lg bg-background"></div>
     <Flipped flipId={"content"} >
-      <div className={`z-40 bg-background relative border-r border-l border-gray-300 ${open ? "shadow-xl" : "shadow-none"} transition-shadow overflow-clip`}>
+      <div className={`z-40 bg-background relative border-r border-l border-gray-300 ${open ? "shadow-xl" : "shadow-none"} transition-shadow overflow-clip`}
+
+      >
         <Flipped inverseFlipId={"content"} scale >
           <div>
             <div className="w-full flex flex-row items-center px-6 pl-4 py-2 space-x-4">
               <input
+                autoFocus
                 onFocus={() => setOpen(true)}
                 onBlur={() => {
                   if (query.length === 0)
                     setOpen(false)
+                }}
+                onKeyDown={(k) => {
+                  if (k.key === "ArrowUp" && results.result && highlightedIndex > 0) {
+                    setHighlightedIndex(x => x - 1)
+                    k.preventDefault()
+                  }
+
+                  if (k.key === "ArrowDown" && results.result && highlightedIndex < results.result?.length - 1) {
+                    setHighlightedIndex(x => x + 1)
+                    k.preventDefault()
+                  }
+
+                  if (k.key === "Enter" && results.result) {
+
+                    if (results.result[highlightedIndex].status === "active") {
+                      chrome.tabs.update(results.result[highlightedIndex].chromeId, { active: true })
+                    }
+                    else chrome.tabs.create({
+                      url:
+                        results.result[highlightedIndex].metadata.url,
+                      active: true
+                    })
+                    k.preventDefault()
+                  }
                 }}
                 onChange={e => {
                   setQuery(e.target.value)
@@ -61,6 +86,7 @@ export const SearchBox: React.FC<{}> = ({ }) => {
               </svg>}
               <SearchIcon className="w-4 h-4 text-gray-500" />
             </div>
+            {/* {results.loading && <div className="w-20 h-20 bg-purple"></div>} */}
             {query && !!results?.result?.length &&
               <div >
                 <div className="px-4 text-small text-gray-700 py-2">Type <kbd>{'>'}</kbd> for commands and ? for help</div>
@@ -71,11 +97,12 @@ export const SearchBox: React.FC<{}> = ({ }) => {
                   </div>
                 </div>}
                 {query !== "?" && !!results?.result?.length &&
-                  <div className="w-full pb-2">
-                    {results.result.filter(x => x.status === "active").slice(0, 2).map(r =>
-                      <SearchResult tab={r as ActiveVisit} />
-                    )}
-                    {results.result.filter(x => x.status === "active").slice(2, 6).map(r => <ShortSearchResult tab={r as ActiveVisit} />)}
+                  <div className="w-full pb-1">
+                    {results.result.filter(x => x.status === "active").slice(0, 8).map((r, i) => {
+                      if (i < 2) return <SearchResult tab={r as ActiveVisit} highlighted={highlightedIndex === i} />
+                      else return <ShortSearchResult tab={r as ActiveVisit} highlighted={highlightedIndex === i} />
+                    })}
+
                   </div>}
               </div>}
           </div>

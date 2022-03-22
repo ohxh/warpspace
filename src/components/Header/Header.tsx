@@ -1,6 +1,6 @@
 import { Menu } from "@headlessui/react";
 import { CogIcon, SearchIcon } from "@heroicons/react/solid";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { SearchModal } from "../new/Search/SearchModal";
 import { SettingsPanel } from "../new/Settings/SettingsPanel";
 import { ShortcutsPanel } from "../new/Settings/ShortcutsPanel";
@@ -21,6 +21,26 @@ export const Header: React.FC = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+
+  const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    if (!searchOpen && event.key === "f" && (event.ctrlKey || event.metaKey)) {
+      setSearchOpen(true);
+      event.preventDefault();
+    }
+    if (searchOpen) {
+      setSearchOpen(false)
+    }
+  }, []);
+
+  useEffect(() => {
+    // attach the event listener
+    document.addEventListener('keydown', handleKeyPress);
+
+    // remove the event listener
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleKeyPress]);
 
   return <>
     <div className="w-full b absolute top-0 px-2 py-1 flex items-center text-gray-500  dark:text-gray-600 text-sm z-40">
@@ -43,7 +63,7 @@ export const Header: React.FC = () => {
     <SettingsPanel open={settingsOpen} setOpen={setSettingsOpen} />
     <ShortcutsPanel open={shortcutsOpen} setOpen={setShortcutsOpen} />
     {searchOpen &&
-      <SearchModal />
+      <SearchModal onClose={() => setSearchOpen(false)} />
     }
 
     {/* <div className="bg-[#bbb] backdrop-blur-xl rounded-lg border absolute top-0 w-48 h-20"></div> */}

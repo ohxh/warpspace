@@ -14,7 +14,7 @@ export const BrandMenu: React.FC<{}> = ({ }) => {
     <div>
       <Menu.Button className="rounded p-1 flex items-center hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-indigo-500">
         <span className="sr-only">Open options</span>
-        <img src={logo} className="w-5 h-5" aria-hidden={true} />
+        <img src={logo} className="w-4 h-4" aria-hidden={true} />
 
       </Menu.Button>
     </div>
