@@ -2,7 +2,7 @@
 // import { OverviewTabContent } from "./OverviewTabContent";
 // import { SingleTabContextMenu } from "./SingleContextMenu";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { OverviewTabContextMenu } from "./OverviewTabContextMenu";
 import "./overview-tab.css";
 import { XIcon } from "@heroicons/react/outline";
@@ -58,6 +58,19 @@ export const OverviewTab: React.FC<{
   const bottom = imageRef.current?.getBoundingClientRect().bottom || 0;
 
   const [press, setPress] = useState(false)
+
+  const handlePress = useCallback(() => {
+    console.warn("handled!")
+    setPress(false)
+  }, [])
+
+  useEffect(() => {
+    window.addEventListener('dragstart', handlePress);
+    return () => {
+      window.removeEventListener('dragstart', handlePress);
+    };
+  }, []);
+
   return (
     <div key={tab.id} className="tab" id={`${tab.id}`}>
       <div className="selection sortable-selected:bg-highlight sortable-ghost:hidden"></div>
@@ -92,12 +105,16 @@ export const OverviewTab: React.FC<{
         >
           <div
             onMouseDown={(e) => {
+              console.warn(e);
+              console.warn("press true")
               setPress(true);
             }}
-            onMouseMove={(e) => {
-              if (e.movementX ** 2 + e.movementY ** 2 > 1)
-                setPress(false)
-            }}
+            // onMouseMove={(e) => {
+            //   if (e.movementX ** 2 + e.movementY ** 2 > 1) {
+            //     setPress(false)
+            //     console.warn("press false")
+            //   }
+            // }}
             ref={imageRef}
             className={`${tab.position.pinned ? "" : "sortable-handle"}
               relative bg-gray-100 aspect-[16/9] 
@@ -206,10 +223,9 @@ export const OverviewTab: React.FC<{
                 <WorldIcon className="mt-[.0625rem] w-[1.125rem] h-[1.125rem] rounded-sm text-gray-800" />
               )}
               <span className="flex-1 text-ellipsis whitespace-nowrap overflow-hidden text-[0.875rem] text-gray-900">
-                {tab.position.index}
-                {tab.crawl.lod === 1 ? tab.crawl.previewImage || "none" : "none2"}
-                {/* {!tab.metadata.url && (tab.isNewTabPage ? "New Tab" : "Chrome")}
-                {tab.metadata.title} */}
+
+                {!tab.metadata.url && (tab.isNewTabPage ? "New Tab" : "Chrome")}
+                {tab.metadata.title}
               </span>
             </div>
             <div className="opacity-0 hover:opacity-100 transition-opacity absolute right-0 top-0 bottom-0 flex flex-row items-center pl-6 bg-gradient-to-r from-transparent via-background to-background sortable-drag:hidden sortable-selected:via-highlight sortable-selected:to-highlight">
