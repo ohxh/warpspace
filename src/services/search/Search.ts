@@ -2,19 +2,17 @@ import { ActiveVisit, db, Page } from "../Database";
 import { isStopWord } from "./StopWordFilter";
 import { tokenizer } from "./Tokenizer";
 import { porterStemmer } from "./PorterStemmer";
-import { TabStore } from "../TabStore";
 import { parse } from "url";
 import { DexieDocumentIndex } from "./DexieDocumentIndex";
 
 export class SearchService {
-  store: TabStore;
   index: DexieDocumentIndex<{
     body: "b";
     url: "u";
     title: "t";
   }>;
 
-  constructor(store: TabStore) {
+  constructor() {
     this.index = new DexieDocumentIndex({
       fields: {
         body: {
@@ -30,7 +28,6 @@ export class SearchService {
       pipeline: (text) =>
         tokenizer(text.toLowerCase()).map((x) => porterStemmer(x)),
     });
-    this.store = store;
   }
 
   async processSearch(search: string) {

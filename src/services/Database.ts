@@ -62,7 +62,7 @@ export interface Page {
 /** Visit that is ongoing */
 export interface ActiveVisit {
   /** Warpspace id, *not* chrome one */
-  id: number;
+  id?: number;
   chromeId: number;
   url?: string;
 
@@ -90,7 +90,7 @@ export interface ActiveVisit {
 }
 
 export interface SuspendedVisit {
-  id: number;
+  id?: number;
   url: string;
 
   status: "suspended";
@@ -109,7 +109,7 @@ export interface SuspendedVisit {
 }
 
 export interface ClosedVisit {
-  id: number;
+  id?: number;
 
   status: "closed";
 
@@ -126,7 +126,7 @@ export interface ClosedVisit {
 export type Visit = SuspendedVisit | ActiveVisit | ClosedVisit;
 
 export interface AnonymousWindow {
-  id: number;
+  id?: number;
   type: "anonymous";
   chromeId: number;
 
@@ -143,7 +143,7 @@ export interface AnonymousWindow {
 }
 
 export interface FullWindow {
-  id: number;
+  id?: number;
   type: "full";
   chromeId: number;
 
@@ -172,9 +172,9 @@ export class WarpspaceDatabase extends Dexie {
   constructor() {
     super("WarpspaceDatabase");
     this.version(1).stores({
-      visits: "&id, chromeId, activeAt, status, searchId",
+      visits: "++id, chromeId, chromeWindowId, activeAt, status, searchId",
       pages: "&url, chromeId, activeAt, status, searchId",
-      windows: "&id, chromeId, activeAt, status, searchId",
+      windows: "++id, chromeId, activeAt, status, searchId",
     });
   }
 }

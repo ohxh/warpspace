@@ -206,6 +206,7 @@ export const OverviewTab: React.FC<{
                 <WorldIcon className="mt-[.0625rem] w-[1.125rem] h-[1.125rem] rounded-sm text-gray-800" />
               )}
               <span className="flex-1 text-ellipsis whitespace-nowrap overflow-hidden text-[0.875rem] text-gray-900">
+                {tab.position.index}
                 {tab.crawl.lod === 1 ? tab.crawl.previewImage || "none" : "none2"}
                 {/* {!tab.metadata.url && (tab.isNewTabPage ? "New Tab" : "Chrome")}
                 {tab.metadata.title} */}

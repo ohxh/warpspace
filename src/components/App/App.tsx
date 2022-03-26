@@ -51,6 +51,7 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
   const windows = useLiveQuery(() => db.windows.toArray(), [], []);
 
   // console.warn("Render kapp with windows", windows.length)
+  //@ts-ignore TODO
   const fullWindows: HydratedWindow[] = windows?.map((m) => ({
     ...m,
     tabs: visits
@@ -95,7 +96,8 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
     setOverride(undefined)
     setOverrideInstant(
       produce((override || fullWindows), (draft) => {
-        draft.find(d => d.id === w.id)!.tabs = updated;
+        //@ts-ignore TODO
+        draft.find(d => d.id! === w.id!)!.tabs = updated;
       })
     );
   }, [override, fullWindows]);
@@ -111,7 +113,7 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
 
   return (
     <div>
-      <tabSelectionContext.Provider value={visits.filter(v => selectionIds.includes(v.id))}>
+      <tabSelectionContext.Provider value={visits.filter(v => selectionIds.includes(v.id!))}>
         <Header />
         <div
           onScroll={(e) => {
