@@ -1,4 +1,4 @@
-import { CogIcon, DotsHorizontalIcon, StarIcon, XIcon } from "@heroicons/react/outline";
+import { CogIcon, DocumentTextIcon, DotsHorizontalIcon, PlusIcon, StarIcon, XIcon } from "@heroicons/react/outline";
 import { StarIcon as StarIconFilled } from "@heroicons/react/solid";
 import { useDebounce } from "@react-hook/debounce";
 import React, { useState } from "react";
@@ -56,6 +56,7 @@ export const OverviewWindow: React.FC<{ data: HydratedWindow }> = ({ data, child
       }}
     >
       <EditableText placeholder="Untitled space"
+        id={`window-title-${data.id}`}
         value={
           overrideTitle === null ?
             (data.type === "full" ? data.title : undefined) : overrideTitle} onChange={setTitle} />
@@ -75,6 +76,50 @@ export const OverviewWindow: React.FC<{ data: HydratedWindow }> = ({ data, child
 
     {children}
 
+
+    <div className="flex pt-6 space-x-4 w-full border-t">
+      <button
+        className="block tab focus:ring-3 ring-focus ring-offset-2 rounded-md focus:outline-none"
+        id={`window-newtab-${data.id}`}
+        onClick={() => {
+          chrome.tabs.create({ active: true, windowId: data.chromeId });
+          chrome.windows.update(data.chromeId, { focused: true });
+        }}
+
+      >
+        <div
+          className={`aspect-[16/9] w-full border border-dashed border-gray-300 rounded-md flex hover:bg-gray-100`}
+          style={{ borderStyle: "d" }}
+        >
+          <div className="m-auto text-gray-600 items-center flex flex-col">
+            <PlusIcon className="w-5 h-5 mb-2" />
+            New tab
+          </div>
+        </div>
+      </button>
+      <button
+        className="block tab focus:ring-3 ring-focus ring-offset-2 rounded-md focus:outline-none"
+        id={`window-newnote-${data.id}`}
+        onClick={() => {
+          chrome.tabs.create({
+            active: true,
+            windowId: data.chromeId,
+            url: chrome.runtime.getURL("/notes.html"),
+          });
+          chrome.windows.update(data.chromeId, { focused: true });
+        }}
+      >
+        <div
+          className={`aspect-[16/9] w-full border border-dashed border-gray-300 rounded-md flex hover:bg-gray-100`}
+          style={{ borderStyle: "d" }}
+        >
+          <div className="m-auto text-gray-600 items-center flex flex-col">
+            <DocumentTextIcon className="w-5 h-5 mb-2" />
+            New note
+          </div>
+        </div>
+      </button>
+    </div>
 
     <div className="mt-20 relative w-full flex-row items-stretch flex">
       <div className="flex flex-row-reverse -mr-5">

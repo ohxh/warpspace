@@ -322,51 +322,71 @@ const updatePreview = (id: number, previewImage: string) => {
 const removeTab = async (id: number, removeInfo: chrome.tabs.TabRemoveInfo) => {
   console.log("removeTab");
 
-  // db.transaction("rw", db.visits, db.windows, async (t) => {
-  //   const storedTab = await tabFromChromeId(id);
+  db.transaction("rw", db.visits, db.windows, async (t) => {
+    const storedTab = await tabFromChromeId(id);
 
-  //storedWindow.tabs.splice(storedTab.position.index, 1);
-  //delete tabs[id];
+    if (removeInfo.windowId !== storedTab.chromeWindowId)
+      throw new Error(
+        "Bad windowid: " + removeInfo.windowId + " vs " + storedTab.windowId
+      );
 
-  // TODO splice other tab ids if needed
-  // TODO make tab closing visit
+    const otherTabs = await db.visits
+      .where("chromeWindowId")
+      .equals(storedTab.chromeWindowId)
+      .toArray();
 
-  // if (storedTab.url) {
-  //   if (removeInfo.isWindowClosing) {
-  //     const suspendingTab: SuspendedVisit = {
-  //       id: storedTab.id,
-  //       windowId: storedTab.windowId,
-  //       url: storedTab.url,
-  //       openedAt: storedTab.openedAt,
-  //       position: storedTab.position,
+    const tabList = otherTabs.sort(
+      (a, b) => a.position.index - b.position.index
+    );
 
-  //       status: "suspended",
-  //       metadata: storedTab.metadata,
-  //       crawl: storedTab.crawl,
-  //       state: storedTab.state,
-  //       activeAt: new Date(),
-  //     };
+    console.log("Before move, ", tabList);
 
-  //     db.visits.put(suspendingTab);
-  //   } else {
-  //     const closingTab: ClosedVisit = {
-  //       id: storedTab.id,
-  //       windowId: storedTab.windowId,
-  //       url: storedTab.url,
-  //       openedAt: storedTab.openedAt,
-  //       position: storedTab.position,
+    tabList.splice(storedTab.position.index, 1);
 
-  //       status: "closed",
-  //       activeAt: new Date(),
-  //     };
+    console.log("After move, ", tabList);
 
-  //     db.visits.put(closingTab);
-  //   }
+    tabList.forEach((t, i) => {
+      t.position.index = i;
+      db.visits.update(t.id!, { position: t.position });
+    });
 
-  //   db.pages.update(storedTab.url, { activeAt: new Date() });
-  // } else {
-  //   db.visits.delete(storedTab.id);
-  // }
+    if (storedTab.url) {
+      if (removeInfo.isWindowClosing) {
+        const suspendingTab: SuspendedVisit = {
+          id: storedTab.id,
+          windowId: storedTab.windowId,
+          url: storedTab.url,
+          openedAt: storedTab.openedAt,
+          position: storedTab.position,
+
+          status: "suspended",
+          metadata: storedTab.metadata,
+          crawl: storedTab.crawl,
+          state: storedTab.state,
+          activeAt: new Date(),
+        };
+
+        db.visits.put(suspendingTab);
+      } else {
+        const closingTab: ClosedVisit = {
+          id: storedTab.id,
+          windowId: storedTab.windowId,
+          url: storedTab.url,
+          openedAt: storedTab.openedAt,
+          position: storedTab.position,
+
+          status: "closed",
+          activeAt: new Date(),
+        };
+
+        db.visits.put(closingTab);
+      }
+
+      db.pages.update(storedTab.url, { activeAt: new Date() });
+    } else {
+      db.visits.delete(storedTab.id!);
+    }
+  }).catch(console.error);
 };
 
 const attachTab = (id: number, attachInfo: chrome.tabs.TabAttachInfo) => {
@@ -376,50 +396,47 @@ const attachTab = (id: number, attachInfo: chrome.tabs.TabAttachInfo) => {
 
   db.transaction("rw", db.visits, db.windows, async (t) => {
     const storedTab = await tabFromChromeId(id);
-    const newStoredWindow = await tabFromChromeId(attachInfo.newWindowId);
 
-    storedTab.windowId = newStoredWindow.id!;
-    storedTab.chromeWindowId = newStoredWindow.chromeId;
+    const newStoredWindow = await windowFromChromeId(attachInfo.newWindowId);
+    // const oldStoredWindow = await windowFromChromeId(storedTab.chromeWindowId);
 
-    // TODO update other tab indices
-    // TODO write this tab back
+    const oldSiblingTabs = await db.visits
+      .where("chromeWindowId")
+      .equals(storedTab.chromeWindowId)
+      .toArray();
 
-    // newStoredWindow.tabs.forEach((t, i) => {
-    //   t.position.index = i;
-    //   db.visits.update(t.id, { position: t.position });
-    // });
+    const newSiblingTabs = await db.visits
+      .where("chromeWindowId")
+      .equals(attachInfo.newWindowId)
+      .toArray();
 
-    // db.visits.update(storedTab.id, {
-    //   windowId: storedTab.windowId,
-    //   chromeWindowId: storedTab.chromeWindowId,
-    // });
-  });
+    const newTabList = newSiblingTabs.sort(
+      (a, b) => a.position.index - b.position.index
+    );
+    newTabList.splice(attachInfo.newPosition, 0, storedTab);
+    newTabList.forEach((t, i) => {
+      t.position.index = i;
+      db.visits.update(t.id!, { position: t.position });
+    });
 
-  // storedTab.windowId = newStoredWindow.id;
-  // storedTab.chromeWindowId = attachInfo.newWindowId;
+    const oldTabList = oldSiblingTabs.sort(
+      (a, b) => a.position.index - b.position.index
+    );
+    oldTabList.splice(storedTab.position.index, 1);
+    oldTabList.forEach((t, i) => {
+      t.position.index = i;
+      db.visits.update(t.id!, { position: t.position });
+    });
 
-  // oldStoredWindow.tabs.splice(storedTab.position.index, 1);
-
-  // oldStoredWindow.tabs.forEach((t, i) => {
-  //   t.position.index = i;
-  //   db.visits.update(t.id, { position: t.position });
-  // });
-
-  // newStoredWindow.tabs.splice(attachInfo.newPosition, 0, storedTab);
-
-  // newStoredWindow.tabs.forEach((t, i) => {
-  //   t.position.index = i;
-  //   db.visits.update(t.id, { position: t.position });
-  // });
-
-  // db.visits.update(storedTab.id, {
-  //   windowId: storedTab.windowId,
-  //   chromeWindowId: storedTab.chromeWindowId,
-  // });
+    db.visits.update(storedTab.id!, {
+      windowId: newStoredWindow.id!,
+      chromeWindowId: attachInfo.newWindowId,
+    });
+  }).catch(console.error);
 };
 
 const addWindow = (window: chrome.windows.Window) => {
-  console.log("addWindow");
+  console.log("addWindow", window);
   const storedWindow: AnonymousWindow = {
     chromeId: window.id!,
 
@@ -465,42 +482,51 @@ const removeWindow = (id: number) => {
 
   db.transaction("rw", db.windows, async (t) => {
     const window = await windowFromChromeId(id);
-    await db.windows.delete(window.id!);
+    const closedWindow: WWindow = {
+      ...window,
+      status: "closed",
+      activeAt: new Date(),
+    };
+    await db.windows.put(closedWindow);
   });
 };
 
 const captureTab = async () => {
-  // TODO modernize
-  // var t0 = performance.now();
-  // const tab = (
-  //   await chrome.tabs.query({
-  //     active: true,
-  //     lastFocusedWindow: true,
-  //   })
-  // )[0];
-  // console.log("Query tab: ", performance.now() - t0);
-  // t0 = performance.now();
-  // const startTime = Date.now();
-  // var im = await captureVisibleTab(
-  //   { windowId: tab.windowId },
-  //   async (partial) => {
-  //     console.log("Partial done: ", performance.now() - t0);
-  //     // if (previewCaptureLastInvalidatedAt - startTime > -100) return;
-  //     const key = makeid(10);
-  //     imageStore.store(key, im);
-  //     if (((await db.visits.get(cur.id)) as ActiveVisit).warpspaceOpen) return;
-  //     cur.state.active = true;
-  //     cur.crawl = {
-  //       ...cur.crawl,
-  //       lod: 1,
-  //       previewImage: key,
-  //     };
-  //     db.visits.update(cur.id, {
-  //       crawl: cur.crawl,
-  //       state: cur.state,
-  //     });
-  //   }
-  // );
+  var t0 = performance.now();
+  const tab = (
+    await chrome.tabs.query({
+      active: true,
+      lastFocusedWindow: true,
+    })
+  )[0];
+  const storedTab = await tabFromChromeId(tab.id!);
+
+  console.log("Query tab: ", performance.now() - t0);
+
+  t0 = performance.now();
+
+  const startTime = Date.now();
+
+  var im = await captureVisibleTab(
+    { windowId: tab.windowId },
+    async (partial) => {
+      // console.log("Partial done: ", performance.now() - t0);
+      // // if (previewCaptureLastInvalidatedAt - startTime > -100) return;
+      // const key = makeid(10);
+      // imageStore.store(key, im);
+      // if (((await db.visits.get(cur.id)) as ActiveVisit).warpspaceOpen) return;
+      // cur.state.active = true;
+      // cur.crawl = {
+      //   ...cur.crawl,
+      //   lod: 1,
+      //   previewImage: key,
+      // };
+      // db.visits.update(cur.id, {
+      //   crawl: cur.crawl,
+      //   state: cur.state,
+      // });
+    }
+  );
   // console.error(
   //   previewCaptureLastInvalidatedAt,
   //   previewCaptureLastInvalidatedAt > startTime ? " > " : " <= ",
@@ -509,25 +535,26 @@ const captureTab = async () => {
   // );
   // if (previewCaptureLastInvalidatedAt - startTime > -100) return;
   // console.log("Capturevisibletab: ", performance.now() - t0);
-  // t0 = performance.now();
-  // const key = makeid(10);
-  // await imageStore.store(key, im);
-  // console.log("store: ", performance.now() - t0);
-  // t0 = performance.now();
-  // TODO refactor
+  t0 = performance.now();
+  const key = makeid(10);
+  await imageStore.store(key, im);
+  console.log("store: ", performance.now() - t0);
+  t0 = performance.now();
+  //TODO refactor
   // if (((await db.visits.get(cur.id)) as ActiveVisit).warpspaceOpen) return;
-  // cur.state.active = true;
-  // cur.crawl = {
-  //   ...cur.crawl,
-  //   lod: 1,
-  //   previewImage: key,
-  // };
-  // db.visits.update(cur.id, {
-  //   crawl: cur.crawl,
-  //   state: cur.state,
-  // });
-  // console.log("write to dexie: ", performance.now() - t0);
-  // t0 = performance.now();
+
+  storedTab.state.active = true;
+  storedTab.crawl = {
+    ...storedTab.crawl,
+    lod: 1,
+    previewImage: key,
+  };
+  db.visits.update(storedTab.id!, {
+    crawl: storedTab.crawl,
+    state: storedTab.state,
+  });
+  console.log("write to dexie: ", performance.now() - t0);
+  t0 = performance.now();
 };
 
 const activateTab = async (activeInfo: chrome.tabs.TabActiveInfo) => {

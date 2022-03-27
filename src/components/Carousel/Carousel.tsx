@@ -26,16 +26,30 @@ export const CarouselContent: React.FC<{
     const active = document.activeElement;
     const focused = parseInt(active?.getAttribute("data-tab-id") || "");
 
+    if (active?.id.startsWith("window-newtab")) {
+      // focus something
+
+    }
+    if (active?.id.startsWith("window-newnote")) {
+      //focus something else
+    }
+
+    const tab = browserState
+      .map((n) => n.tabs.find((n) => n.id === focused))
+      .filter(x => x !== undefined)[0]
+
     var location: [number, number] = browserState
       .map((n) => n.tabs.findIndex((n) => n.id === focused))
       .map((v, i) => [i, v])
       .find(([w, t]) => t >= 0) as [number, number];
 
+
     if (location[1] - 6 < 0) {
-      // focus window title
+      document.getElementById(`window-title-${tab!.windowId}`)?.focus()
       return;
     }
     if (location[1] - 6 >= 0) location[1] -= 6;
+
 
     tabRefs.current[browserState[location[0]].tabs[location[1]].id].focus({
       preventScroll: true,
@@ -51,6 +65,9 @@ export const CarouselContent: React.FC<{
     const active = document.activeElement;
     const focused = parseInt(active?.getAttribute("data-tab-id") || "");
 
+    const tab = browserState
+      .map((n) => n.tabs.find((n) => n.id === focused))
+      .filter(x => x !== undefined)[0]
     var location: [number, number] = browserState
       .map((n) => n.tabs.findIndex((n) => n.id === focused))
       .map((v, i) => [i, v])
@@ -63,6 +80,11 @@ export const CarouselContent: React.FC<{
     if (location[1] + 6 < browserState[location[0]].tabs.length) location[1] += 6;
     else if (location[1] % 6 >= (browserState[location[0]].tabs.length - 1) % 6)
       location[1] = browserState[location[0]].tabs.length - 1;
+    else {
+      if (location[1] % 6 == 0) document.getElementById(`window-newtab-${tab!.windowId}`)?.focus()
+      if (location[1] % 6 > 0) document.getElementById(`window-newnote-${tab!.windowId}`)?.focus()
+      return;
+    }
 
     tabRefs.current[browserState[location[0]].tabs[location[1]].id].focus({
       preventScroll: true,
@@ -78,6 +100,10 @@ export const CarouselContent: React.FC<{
     const active = document.activeElement;
     const focused = parseInt(active?.getAttribute("data-tab-id") || "");
 
+
+    const tab = browserState
+      .map((n) => n.tabs.find((n) => n.id === focused))
+      .filter(x => x !== undefined)[0]
     var location: [number, number] = browserState
       .map((n) => n.tabs.findIndex((n) => n.id === focused))
       .map((v, i) => [i, v])
@@ -114,6 +140,9 @@ export const CarouselContent: React.FC<{
     const active = document.activeElement;
     const focused = parseInt(active?.getAttribute("data-tab-id") || "");
 
+    const tab = browserState
+      .map((n) => n.tabs.find((n) => n.id === focused))
+      .filter(x => x !== undefined)[0]
     var location: [number, number] = browserState
       .map((n) => n.tabs.findIndex((n) => n.id === focused))
       .map((v, i) => [i, v])
@@ -160,11 +189,11 @@ export const CarouselContent: React.FC<{
   return <div
     onKeyDown={(e) => {
       if (e.key === "ArrowLeft") {
-        e.preventDefault();
+        //e.preventDefault();
         focusLeft();
       }
       if (e.key === "ArrowRight") {
-        e.preventDefault();
+        //e.preventDefault();
         focusRight();
       }
       if (e.key === "ArrowUp") {
@@ -236,48 +265,7 @@ export const CarouselContent: React.FC<{
           ))}
         </ReactSortable>
 
-        <div className="flex pt-6 space-x-4 w-full border-t mt-6">
-          <a
-            className="block tab"
-            onClick={() => {
-              chrome.tabs.create({ active: true, windowId: w.chromeId });
-              chrome.windows.update(w.chromeId, { focused: true });
-            }}
-            target="_blank"
-          >
-            <div
-              className={`aspect-[16/9] w-full border border-dashed border-gray-300 rounded-md flex hover:bg-gray-100`}
-              style={{ borderStyle: "d" }}
-            >
-              <div className="m-auto text-gray-600 items-center flex flex-col">
-                <PlusIcon className="w-5 h-5 mb-2" />
-                New tab
-              </div>
-            </div>
-          </a>
-          <a
-            className="block tab"
-            onClick={() => {
-              chrome.tabs.create({
-                active: true,
-                windowId: w.chromeId,
-                url: chrome.runtime.getURL("/notes.html"),
-              });
-              chrome.windows.update(w.chromeId, { focused: true });
-            }}
-            target="_blank"
-          >
-            <div
-              className={`aspect-[16/9] w-full border border-dashed border-gray-300 rounded-md flex hover:bg-gray-100`}
-              style={{ borderStyle: "d" }}
-            >
-              <div className="m-auto text-gray-600 items-center flex flex-col">
-                <DocumentTextIcon className="w-5 h-5 mb-2" />
-                New note
-              </div>
-            </div>
-          </a>
-        </div>
+
       </OverviewWindow>
     ))}
   </div>

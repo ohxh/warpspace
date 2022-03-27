@@ -40,7 +40,7 @@ function debounce(func: () => void, timeout = 200) {
   };
 }
 
-const events = ["scroll", "click", "change", "keydown", "animationend", "resize"]
+const events = ["scroll", "click", "change", "keydown", "resize"]
 
 events.forEach(e => window.addEventListener(e, handleEv, { capture: true }))
 

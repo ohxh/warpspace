@@ -154,7 +154,6 @@ export interface FullWindow {
 
   height: number;
   width: number;
-
   top: number;
   left: number;
 

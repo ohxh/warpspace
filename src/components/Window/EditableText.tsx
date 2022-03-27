@@ -2,10 +2,11 @@ import { PencilIcon } from "@heroicons/react/solid";
 import React, { useState } from "react";
 
 export const EditableText: React.FC<{
+  id?: string;
   value?: string;
   onChange: (x: string | undefined) => void;
   placeholder: string;
-}> = ({ value, onChange, placeholder }) => {
+}> = ({ value, onChange, placeholder, id }) => {
   const [state, setState] = useState<string | undefined>(value);
   const [editing, setEditing] = useState(false);
 
@@ -18,9 +19,11 @@ export const EditableText: React.FC<{
     onChange(state);
     setEditing(false);
   }
+
   if (editing)
     return (
       <input
+        id={id}
         className="text-gray-900 placeholder:text-gray-300 text-4xl w-full rounded-sm ring-0 outline-none focus:ring-3 ring-offset-2 ring-focus"
         autoFocus
         placeholder={placeholder}
@@ -35,6 +38,9 @@ export const EditableText: React.FC<{
   if (!editing)
     return (
       <span
+        tabIndex={-1}
+        id={id}
+        onFocus={open}
         className="group flex items-baseline w-full"
         onClick={open}
       >
