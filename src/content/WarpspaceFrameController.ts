@@ -32,6 +32,8 @@ export class WarpspaceFrameController {
   constructor(window: Window) {
     this.window = window;
     // Initialize frame
+    const container = document.createElement("div");
+    container.id = "warpspace-injected-app-container";
     const frame = document.createElement("iframe");
     frame.src = chrome.runtime.getURL("app.html");
     frame.id = "warpspace-injected-app";
@@ -49,7 +51,8 @@ export class WarpspaceFrameController {
     document.addEventListener("wheel", this.onWheel, { passive: false });
 
     window.addEventListener("DOMContentLoaded", (event) => {
-      document.body.appendChild(frame);
+      document.body.appendChild(container);
+      container.appendChild(frame);
       debug("DOM loaded, attached frame");
     });
 
@@ -95,11 +98,6 @@ export class WarpspaceFrameController {
           this.exitWarpspace();
         }
       }
-      console.log(
-        this.pinchZoomLevel,
-        this.scrollStartPinchZoomLevel,
-        e.deltaY
-      );
     }
   };
 

@@ -1,12 +1,11 @@
 //import { Document } from "flexsearch";
 import { db } from "./services/Database";
-import { initializeTabStore } from "./services/TabStore";
+import { attachListeners, initializeTabStore } from "./services/TabStore";
 
-db.windows.clear();
-db.visits.clear();
-db.pages.clear();
-
-initializeTabStore();
+attachListeners();
+chrome.runtime.onInstalled.addListener(() => {
+  initializeTabStore();
+});
 
 chrome.commands.onCommand.addListener(async (c) => {
   console.warn("Got command ", c);

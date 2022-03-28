@@ -105,16 +105,10 @@ export const OverviewTab: React.FC<{
         >
           <div
             onMouseDown={(e) => {
-              console.warn(e);
-              console.warn("press true")
-              setPress(true);
+              if (e.button === 0 && !e.ctrlKey)
+                setPress(true);
             }}
-            // onMouseMove={(e) => {
-            //   if (e.movementX ** 2 + e.movementY ** 2 > 1) {
-            //     setPress(false)
-            //     console.warn("press false")
-            //   }
-            // }}
+
             ref={imageRef}
             className={`${tab.position.pinned ? "" : "sortable-handle"}
               relative bg-gray-100 aspect-[16/9] 

@@ -46,17 +46,17 @@ document.addEventListener(
   { passive: false }
 );
 
-document.body.style.opacity = "0.01";
+document.body.style.display = "none";
 
 window.addEventListener("message", (m) => {
   if (m.data.event === "enter-warpspace") {
-    document.body.style.opacity = "1";
+    document.body.style.display = "block";
     console.warn("message sent")
     // chrome.runtime.sendMessage({ event: "register-warpspace-open" })
   }
   if (m.data.event === "exit-warpspace") {
     // chrome.runtime.sendMessage({ event: "request-capture" })
-    document.body.style.opacity = "0.01";
+    document.body.style.display = "none";
     // chrome.runtime.sendMessage({ event: "register-warpspace-closed" })
   }
 });

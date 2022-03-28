@@ -26,9 +26,15 @@ export const SearchBox: React.FC<{}> = ({ }) => {
     setLoading: state => ({ ...state, loading: true }),
   })
 
-  const lastResults = useRef(results);
 
   const [highlightedIndex, setHighlightedIndex] = useState(0);
+
+
+  useEffect(() => {
+    if (results.result && highlightedIndex >= (results.result.length)) {
+      setHighlightedIndex(0)
+    }
+  }, [highlightedIndex, setHighlightedIndex, results])
 
   return <Flipper
     // flipKey={results.result?.length === 0 ? lastResults.current.result : results.result}

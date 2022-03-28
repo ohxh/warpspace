@@ -598,10 +598,7 @@ const activateTab = async (activeInfo: chrome.tabs.TabActiveInfo) => {
   // }, 100);
 };
 
-export async function initializeTabStore() {
-  console.warn("GetInitialData");
-  var windows = await chrome.windows.getAll({ populate: true });
-
+export function attachListeners() {
   chrome.windows.onRemoved.addListener(removeWindow);
   chrome.windows.onCreated.addListener(addWindow);
   chrome.windows.onFocusChanged.addListener(windowFocusChanged);
@@ -664,6 +661,11 @@ export async function initializeTabStore() {
       //   .catch((e) => console.error(e));
     }
   });
+}
+
+export async function initializeTabStore() {
+  console.warn("GetInitialData");
+  var windows = await chrome.windows.getAll({ populate: true });
 
   windows.forEach((w) => {
     addWindow(w);

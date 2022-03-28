@@ -2,9 +2,9 @@ const plugin = require('tailwindcss/plugin')
 
 module.exports = {
   content: [
-    // Example content paths...
     './public/**/*.html',
     './src/**/*.{js,jsx,ts,tsx}',
+    './src/*.{js,jsx,ts,tsx}',
   ],
   darkMode: 'class', // or 'media' or 'class'
   theme: {

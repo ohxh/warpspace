@@ -114,7 +114,7 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
   const browserState = useMemo(() => override || fullWindows, [override, fullWindows])
 
   return (
-    <div>
+    <div className="select-none">
       <tabSelectionContext.Provider value={visits.filter(v => selectionIds.includes(v.id!))}>
         <Header />
         <div
@@ -129,7 +129,7 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
             setMinimapVisible(true);
             setMinimapVisibleDebounce(false);
           }}
-          className={`bg-background h-screen w-screen no-scrollbar overflow-scroll ${scrolling ? "" : "snap-mandatory snap-x"} overscroll-contain will-change-scroll`}>
+          className={`bg-background h-screen w-screen no-scrollbar overflow-scroll ${scrolling ? "" : "snap-mandatory snap-x"} overscroll-contain `}>
 
           <Carousel
             browserState={browserState}

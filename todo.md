@@ -39,16 +39,20 @@ Start dogfooding (!)
 - [ ] Thread react-flip-toolkit through sortable for remote updates
 - [~] Refactor / clean up
   - [ ] Standardize message passing format
+- [ ] Get npm patches working for sortable
 - [ ] Basic visual performance
   - [x] Jitter in zoom out
-  - [~] Find a way to move minimap without rerendering entire app
+  - [x] Find a way to move minimap without rerendering entire app
   - [x] Fix tab mouse down effect
   - [ ] Initial tab load time
   - [x] Split vendor files for each entrypoint
   - [ ] Remove unused deps
+  - [x] Video memory used up on page scroll
+  - [x] Rerender new frame before leaving tab
   - [ ] Application lag
   - [x] Troubleshoot hook rerenders
   - [x] Delay in query return when OS context switching in
+  - [ ] Listeners disconnecting
 - [x] Text scraping
 - [~] Search index
 - [ ] Search preview extractor, ui

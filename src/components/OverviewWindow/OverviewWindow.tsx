@@ -88,7 +88,7 @@ export const OverviewWindow: React.FC<{ data: HydratedWindow }> = ({ data, child
 
       >
         <div
-          className={`aspect-[16/9] w-full border border-dashed border-gray-300 rounded-md flex hover:bg-gray-100`}
+          className={`aspect-[16/9] w-full border border-dashed border-gray-300 rounded-md flex`}
           style={{ borderStyle: "d" }}
         >
           <div className="m-auto text-gray-600 items-center flex flex-col">
@@ -110,7 +110,7 @@ export const OverviewWindow: React.FC<{ data: HydratedWindow }> = ({ data, child
         }}
       >
         <div
-          className={`aspect-[16/9] w-full border border-dashed border-gray-300 rounded-md flex hover:bg-gray-100`}
+          className={`aspect-[16/9] w-full border border-dashed border-gray-300 rounded-md flex`}
           style={{ borderStyle: "d" }}
         >
           <div className="m-auto text-gray-600 items-center flex flex-col">
@@ -127,6 +127,7 @@ export const OverviewWindow: React.FC<{ data: HydratedWindow }> = ({ data, child
         {data.tabs.slice(0, 3).map((tab, index) => {
           return <div className={`flex flex-col  w-5`}
             style={{ transform: `scale(${1 - .03 * (2 - index)})` }}
+            key={index}
           >
             <div className="tab cursor-pointer group-active:opacity-80">
               <LocalStorageImage srcKey={tab.crawl.lod === 1 ? (tab.crawl.previewImage || "none") : "none2"} alt="" className={`shadow-lg bg-gray-100 aspect-[16/9] w-full border border-gray-300 rounded-md  object-cover`} />
