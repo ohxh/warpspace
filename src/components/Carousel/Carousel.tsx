@@ -189,19 +189,23 @@ export const CarouselContent: React.FC<{
   return <div
     onKeyDown={(e) => {
       if (e.key === "ArrowLeft") {
-        //e.preventDefault();
+        if ((e.target as HTMLElement).tagName !== "input")
+          e.preventDefault();
         focusLeft();
       }
       if (e.key === "ArrowRight") {
-        //e.preventDefault();
+        if ((e.target as HTMLElement).tagName !== "input")
+          e.preventDefault();
         focusRight();
       }
       if (e.key === "ArrowUp") {
-        e.preventDefault();
+        if ((e.target as HTMLElement).tagName !== "input")
+          e.preventDefault();
         focusUp();
       }
       if (e.key === "ArrowDown") {
-        e.preventDefault();
+        if ((e.target as HTMLElement).tagName !== "input")
+          e.preventDefault();
         focusDown();
       }
     }}

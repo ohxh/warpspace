@@ -37,3 +37,29 @@ Crazy ideas:
 
 - Session collaboration
 - Todos (switch back into context)
+
+## Final idea
+
+Fork rich-markdown-editor to take tips on integration for a custom prosemirror editor.
+
+Todo
+
+- [ ] Fork, move into subfolder of this repo
+- [ ] Fix type errors with new tsconfig (strict)
+- [ ] Delete unused features
+
+  - [ ] Collapsing sections
+  - [ ] Weird embeds
+  - [ ] Link picker
+  - [ ] Collaborative stuff
+
+- [ ] Gradually swap styles over to tailwind
+- [ ] Remove theme system when done
+
+- [ ] Re-style block element menu
+- [ ] Create new webpage embed menu
+
+- [ ] Persist to indexeddb
+- [ ] Markdown export
+
+- [ ] Unify i18n, theming, settings across both projects

@@ -65,7 +65,7 @@ Start dogfooding (!)
 - [ ] Finalize + clean up data schemas
 - [ ] Fix crunchpreview dealing with aspect ratio
 - [ ] Tune crunchpreview
-- [ ] Persist data
+- [x] Persist data
 - [ ] Make logo
 
 Give to close friends

@@ -66,16 +66,16 @@ module.exports = {
         800: "var(--theme-gray-800)",
         900: "var(--theme-gray-900)",
       },
-      gray2: {
-        100: "#F0F3F4",
-        200: "#E8EBEC",
-        300: "#DDDEDF",
-        400: "#B9BCBE",   
-        500: "#8B8E92",
-        600: "#696A6C",
-        700: "#5F6367",
-        800: "#414548",
-        900: "#202124"
+      note: {
+        100: "var(--note-theme-100)",
+        200: "var(--note-theme-200)",
+        300: "var(--note-theme-300)",
+        400: "var(--note-theme-400)",
+        500: "var(--note-theme-500)",
+        600: "var(--note-theme-600)",
+        700:"var(--note-theme-700)",
+        800: "var(--note-theme-800)",
+        900: "var(--note-theme-900)",
       },
     }
   },
