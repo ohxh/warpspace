@@ -235,7 +235,6 @@ export const CarouselContent: React.FC<{
           handle=".sortable-handle"
           list={w.tabs}
           onMove={(e) => {
-            console.log(e.to)
             if (!x) {
               // e.to.scrollIntoView({
               //   behavior: "smooth",

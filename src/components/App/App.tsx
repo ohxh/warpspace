@@ -13,7 +13,6 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
   const [selectionIds, setSelectionIds] = useState<number[]>([]);
 
   const toggleSelected = useCallback((x: number) => {
-    console.log("ToggleSelected ", x)
     setSelectionIds(old => old.includes(x)
       ? old.filter((y) => y !== x)
       : [...old, x])
@@ -22,7 +21,6 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
   const [currentTab, setCurrentTab] = useState<number>(0);
 
   useEffect(() => {
-    console.log("setCurrentTab")
     chrome.tabs.getCurrent((t) => {
       setCurrentTab(t!.id!);
     });
@@ -93,18 +91,31 @@ export const OverviewApp: React.FC<{}> = ({ }) => {
     // If l has lost a tab, ignore it. (the other sortable will fire to move it)
     // If a tab in l has moved    
 
+
     setOverride(undefined)
+
+    let draft = (override || fullWindows);
+
+    let tempOverride = draft.map(d => d.id! === w.id! ? ({
+      ...d,
+      tabs: updated,
+    }) : d)
+
+    // produce((override || fullWindows), (draft) => {
+    //   //@ts-ignore TODO
+    //   draft.find(d => d.id! === w.id!)!.tabs = updated;
+    // });
+
     setOverrideInstant(
-      produce((override || fullWindows), (draft) => {
-        //@ts-ignore TODO
-        draft.find(d => d.id! === w.id!)!.tabs = updated;
-      })
+
+      //@ts-ignore
+      tempOverride
     );
   }, [override, fullWindows]);
 
   const [scrolling, setScrolling] = useState(false);
   const startScroll = useCallback(() => {
-    console.log("onDragStart"); setScrolling(true)
+    setScrolling(true)
   }, [setScrolling])
   const stopScroll = useCallback(() => { console.log("onDragEnd"); setScrolling(false) }, [setScrolling])
 

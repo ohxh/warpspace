@@ -121,7 +121,7 @@ export const OverviewWindow: React.FC<{ data: HydratedWindow }> = ({ data, child
       </button>
     </div>
 
-    <div className="mt-20 relative w-full flex-row items-stretch flex">
+    {/* <div className="mt-20 relative w-full flex-row items-stretch flex">
       <div className="flex flex-row-reverse -mr-5">
         <div className="tab"></div>
         {data.tabs.slice(0, 3).map((tab, index) => {
@@ -163,13 +163,13 @@ export const OverviewWindow: React.FC<{ data: HydratedWindow }> = ({ data, child
             {!tab.metadata.favIconUrl && tab.metadata.url && (
               <WorldIcon className="mt-[.0625rem] w-[1.125rem] h-[1.125rem] rounded-sm text-gray-800" />
             )}
-            {/* {index === 2 && <span className="flex-1">+ 5 more tabs</span>} */}
+           
           </div>)}
           <div className="text-gray-700 ml-2">+ 5</div>
         </div>
 
       </div>
-    </div>
+    </div> */}
 
 
   </div >

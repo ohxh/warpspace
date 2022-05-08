@@ -51,7 +51,6 @@ document.body.style.display = "none";
 window.addEventListener("message", (m) => {
   if (m.data.event === "enter-warpspace") {
     document.body.style.display = "block";
-    console.warn("message sent")
     // chrome.runtime.sendMessage({ event: "register-warpspace-open" })
   }
   if (m.data.event === "exit-warpspace") {
@@ -73,7 +72,6 @@ let currentTabId = 0;
 chrome.tabs.getCurrent((c) => currentTabId = c!.id!);
 
 chrome.tabs.onZoomChange.addListener((z) => {
-  console.warn({ z: z.newZoomFactor })
   if (z.tabId === currentTabId)
     document.documentElement.style.fontSize = 100 / z.newZoomFactor + "%"
   document.documentElement.style.letterSpacing = .02 * (1 - z.newZoomFactor) + "em"

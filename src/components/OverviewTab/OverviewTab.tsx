@@ -27,7 +27,7 @@ export const OverviewTab: React.FC<{
   tab: ActiveVisit;
   tabRef: (x: HTMLElement | null) => void;
 }> = ({ current, tabRef, tab }) => {
-  const ref = useRef<HTMLButtonElement | null>(null);
+  const ref = useRef<HTMLDivElement | null>(null);
   const imageRef = useRef<HTMLDivElement | null>(null);
   const [zoomingIn, setZoomingInDebounce, setZoomingIn] = useDebounce(
     false,
@@ -75,7 +75,8 @@ export const OverviewTab: React.FC<{
     <div key={tab.id} className="tab" id={`${tab.id}`}>
       <div className="selection sortable-selected:bg-highlight sortable-ghost:hidden"></div>
       <OverviewTabContextMenu>
-        <button
+        <div
+          tabIndex={0}
           data-tab-id={tab.id}
           key={tab.id}
           onClick={(e) => {
@@ -239,7 +240,7 @@ export const OverviewTab: React.FC<{
               </button>
             </div>
           </div>
-        </button>
+        </div>
       </OverviewTabContextMenu>
     </div>
   );

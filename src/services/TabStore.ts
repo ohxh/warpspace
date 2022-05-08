@@ -63,7 +63,7 @@ const indexTextContent = async (chromeId: number, content: string) => {
   const oldPage = await db.pages.get(tab.url || "");
   const oldVisit = await db.visits.get(tab.id!);
 
-  console.log("!", await db.visits.update(tab.id!, { searchId: searchId }));
+  await db.visits.update(tab.id!, { searchId: searchId });
   await db.pages.update(tab.url || "", { searchId });
 
   const newVisit = await db.visits.get(tab.id!);
@@ -278,7 +278,6 @@ const moveTab = (id: number, moveInfo: chrome.tabs.TabMoveInfo) => {
   console.log("moveTab!", id, moveInfo);
 
   db.transaction("rw", db.visits, db.windows, async (t) => {
-    console.log("intrans");
     const storedTab = await tabFromChromeId(id);
 
     if (moveInfo.windowId !== storedTab.chromeWindowId)
@@ -297,12 +296,9 @@ const moveTab = (id: number, moveInfo: chrome.tabs.TabMoveInfo) => {
       (a, b) => a.position.index - b.position.index
     );
 
-    console.log("Before move, ", tabList);
     //Move the tab in our local state
     tabList.splice(moveInfo.fromIndex, 1);
     tabList.splice(moveInfo.toIndex, 0, storedTab);
-
-    console.log("After move, ", tabList);
 
     tabList.forEach((t, i) => {
       t.position.index = i;
@@ -339,11 +335,7 @@ const removeTab = async (id: number, removeInfo: chrome.tabs.TabRemoveInfo) => {
       (a, b) => a.position.index - b.position.index
     );
 
-    console.log("Before move, ", tabList);
-
     tabList.splice(storedTab.position.index, 1);
-
-    console.log("After move, ", tabList);
 
     tabList.forEach((t, i) => {
       t.position.index = i;
