@@ -1,0 +1,40 @@
+@media (prefers-color-scheme: light) {
+  :root {
+    --ramp-0: white;
+    --ramp-50: #f6f8f9;
+    --ramp-100: #f0f3f4;
+    --ramp-200: #e8ebec;
+    --ramp-300: #dddedf;
+    --ramp-400: #b9bcbe;
+    --ramp-500: #8b8e92;
+    --ramp-600: #696a6c;
+    --ramp-700: #5f6367;
+    --ramp-800: #414548;
+    --ramp-900: #202124;
+
+    --highlight-color: #b3d7ff;
+    --select-color: #51a1fd;
+    --focus-color: #0075ff;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    @apply antialiased;
+
+    --ramp-0: #101112;
+
+    --ramp-100: #202124;
+    --ramp-200: #35363a;
+    --ramp-300: #5f6367;
+    --ramp-400: #606164;
+    --ramp-500: #86888a;
+    --ramp-600: #b9bcbe;
+    --ramp-700: #dddedf;
+    --ramp-800: #e8ebec;
+    --ramp-900: #f0f3f4;
+
+    --highlight-color: #2b4766;
+    --focus-color: #4384f4;
+  }
+}

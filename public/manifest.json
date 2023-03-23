@@ -1,0 +1,61 @@
+{
+  "manifest_version": 3,
+
+  "name": "Warpspace",
+  "description": "Chrome Extension, TypeScript, Visual Studio Code",
+  "version": "1.0",
+
+  "chrome_url_overrides": {
+    "newtab": "new_tab.html"
+  },
+
+  "icons": {
+    "48": "logo.png"
+  },
+
+  "commands": {
+    "warpspace-search": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+1",
+        "mac": "Command+Shift+1"
+      },
+      "description": "Enter Warpspace Search",
+      "global": true
+    }
+  },
+
+  "content_scripts": [
+      {
+        "all_frames": true,
+          "matches": ["<all_urls>"],
+          "run_at": "document_start",
+          "js": ["js/content.js"],
+          "css": ["content.css"]
+      }
+      
+  ],
+
+  "background": {
+    "service_worker": "js/background.js"
+  },
+
+  "permissions": [
+    "storage",
+    "scripting",
+    "unlimitedStorage",
+    "history",
+    "favicon"
+  ],
+
+
+"devtools_page": "devb.html",
+  "host_permissions": [
+    "<all_urls>",
+    "https://en.wikipedia.org/*"
+  ],
+
+  "web_accessible_resources": [{
+    "resources": ["search.html"],
+    "matches": ["<all_urls>"]
+  }]
+}

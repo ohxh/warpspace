@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "strict": true,
+        "experimentalDecorators": true,
+        "module": "ESNext",
+        "moduleResolution": "node",
+        "target": "ESNext",
+
+        
+        "sourceMap": true,
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "rootDir": "src",
+        "outDir": "dist/js",
+
+        "noEmitOnError": true,
+        "jsx": "react",
+
+        "typeRoots": [ "node_modules/@types", "src/index.d.ts" ]
+    }
+}

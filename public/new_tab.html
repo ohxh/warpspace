@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>New Tab</title>
+    <link href="/tailwind.css" rel="stylesheet">
+    <link href="/content.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/icon.svg">
+    <style>
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #101112;
+          transition: background 0.2s 0.2s ease;
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        body {
+          background: white;
+          transition: background 0.2s 0.2s ease;
+        }
+      }
+    </style>
+  </head>
+  <body >
+    <div id="root" class="animate-fadeIn"></div>
+    <script src="js/new_tab.js"></script>
+  </body>
+</html>
+

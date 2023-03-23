@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Welcome to Warpspace</title>
+    <link href="/tailwind.css" rel="stylesheet">
+    <link href="/content.css" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/icon.svg">
+    <style>
+      @media (prefers-color-scheme: dark) {
+        body {
+          background: #101112;
+          transition: background 0.2s ease;
+        }
+      }
+      @media (prefers-color-scheme: light) {
+        body {
+          background: white;
+          transition: background 0.2s ease;
+        }
+      }
+    </style>
+    <!-- <script src="js/content_script.js"></script> -->
+  </head>
+  <body >
+    <div id="root" class="animate-fadeIn"></div>
+    <script src="js/intro.js"></script>
+    <script src="js/content.js"></script>
+  </body>
+</html>
+

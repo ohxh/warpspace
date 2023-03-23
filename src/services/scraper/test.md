@@ -1,0 +1,3 @@
+ENDPOINTS
+
+[POST  \/v1\/identity\/verification_sessions](https://stripe.com/docs/api/versioning#create_identity_verification_session)[GET  \/v1\/identity\/verification_sessions](https://stripe.com/docs/api/versioning#list_identity_verification_session)[GET  \/v1\/identity\/verification_sessions\/:id](https://stripe.com/docs/api/versioning#retrieve_identity_verification_session)[POST  \/v1\/identity\/verification_sessions\/:id](https://stripe.com/docs/api/versioning#update_identity_verification_session)[POST  \/v1\/identity\/verification_sessions\/:id\/cancel](https://stripe.com/docs/api/versioning#cancel_identity_verification_session)[POST  \/v1\/identity\/verification_sessions\/:id\/redact](https://stripe.com/docs/api/versioning#redact_identity_verification_session)

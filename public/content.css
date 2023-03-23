@@ -1,0 +1,19 @@
+iframe#warpspace-search-injected-app {
+  z-index: 2147483647;
+  position: fixed;
+  margin: 0;
+  padding: 0;
+  max-width: none;
+  max-height: none;
+  border: none;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: transparent;
+  color-scheme: none;
+  user-select: none;
+  overscroll-behavior: none;
+}
