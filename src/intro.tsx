@@ -2,11 +2,11 @@ import { ArrowRightIcon } from "@heroicons/react/20/solid";
 import { useLiveQuery } from "dexie-react-hooks";
 import React, { useState } from "react";
 import ReactDOM from "react-dom";
-import { indexHistory } from "./background";
 import { db } from "./services/database/DatabaseSchema";
 import { WarpspaceSettingsProvider } from "./services/settings/WarpspaceSettingsContext";
 import "./styles/style.css";
 import "./styles/theme.css";
+import { createRoot } from "react-dom/client";
 
 
 
@@ -19,7 +19,7 @@ const IntroTabApp = () => {
 
   const initFromHistory = () => {
     setLoading(true);
-    indexHistory(() => { });
+    // indexHistory(() => { });
   }
 
   const initFromBlank = () => {
@@ -119,13 +119,15 @@ const IntroTabApp = () => {
   </div>
 };
 
-ReactDOM.render(
+const root = createRoot(document.getElementById("root")!);
+
+root.render(
   <React.StrictMode>
     <WarpspaceSettingsProvider>
       <IntroTabApp />
     </WarpspaceSettingsProvider>
   </React.StrictMode>,
-  document.getElementById("root")
+
 );
 
 

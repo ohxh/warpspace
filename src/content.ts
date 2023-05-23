@@ -1,6 +1,8 @@
 import { debug } from "./services/logging/log";
 import { scrapeBlockElement, scrapeBody } from "./services/scraper/scrape";
+import { getLiveSettings } from "./services/settings/WarpspaceSettingsContext";
 import { InjectedFrameController } from "./utils/InjectedFrameController";
+import { domLoaded } from "./utils/onDOMLoad";
 
 //@ts-ignore
 window["scrapeElement"] = (x: any) => scrapeBlockElement(x);
@@ -31,19 +33,6 @@ if (self === top) {
 
     return scrapeBody();
   }
-
-  const flasher = document.createElement("div");
-  flasher.className = "flasher";
-  window.addEventListener(
-    "DOMContentLoaded",
-    () => document.body.appendChild(flasher),
-    { once: true }
-  );
-
-  const flash = () => {
-    flasher.classList.add("flash");
-    setTimeout(() => flasher.classList.remove("flash"), 100);
-  };
 
   if (document.body) {
     setTimeout(() => {
@@ -78,7 +67,10 @@ if (self === top) {
 }
 
 const handleEv = debounce(() => {
-  chrome.runtime.sendMessage({ event: "request-capture" });
+  setTimeout(
+    () => chrome.runtime.sendMessage({ event: "request-capture" }),
+    100
+  );
 });
 
 function debounce(func: () => void, timeout = 200) {
@@ -91,7 +83,10 @@ function debounce(func: () => void, timeout = 200) {
 
 document.addEventListener("visibilitychange", (e) => {
   if (document.visibilityState === "visible")
-    chrome.runtime.sendMessage({ event: "request-capture" });
+    setTimeout(
+      () => chrome.runtime.sendMessage({ event: "request-capture" }),
+      100
+    );
 });
 
 const events = [
@@ -106,3 +101,22 @@ const events = [
 ];
 
 events.forEach((e) => window.addEventListener(e, handleEv, { capture: true }));
+
+getLiveSettings().then(async (settings) => {
+  await domLoaded;
+
+  const updateDebugUIVisible = () => {
+    if (settings.developer.showDebugUI) {
+      if (!document.querySelector(".warpspace-injected-debug")) {
+        const frame = document.createElement("iframe");
+        frame.src = chrome.runtime.getURL("debug.html");
+        frame.className = "warpspace-injected-debug";
+        document.body.appendChild(frame);
+      }
+    } else {
+      document.querySelector(".warpspace-injected-debug")?.remove();
+    }
+  };
+  updateDebugUIVisible();
+  settings.onChange.addListener(updateDebugUIVisible);
+});

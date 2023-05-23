@@ -1,12 +1,12 @@
 
 import { LockClosedIcon } from "@heroicons/react/20/solid";
 import React, { forwardRef } from "react";
-import { OpenTab, Page } from "../../../services/database/DatabaseSchema";
+import { OpenVisit, Page, TrackedVisit } from "../../../services/database/DatabaseSchema";
 import { Favicon } from "../../primitives/Favicon";
 import { LocalStorageImage } from "../../primitives/LocalStorageImage";
 
 export interface TabPreviewProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
-  tab: OpenTab | Page;
+  tab: TrackedVisit | Page;
 }
 
 export const TabPreview = forwardRef<HTMLDivElement, TabPreviewProps>(({ tab, }, ref) => {

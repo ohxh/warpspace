@@ -8,6 +8,7 @@ module.exports = {
       style: path.join(srcDir, 'style.tsx'),
       devb: path.join(srcDir, 'devb.tsx'),
       dev: path.join(srcDir, 'dev.tsx'),
+      debug: path.join(srcDir, 'debug.tsx'),
       new_tab: path.join(srcDir, 'new_tab.tsx'),
       search: path.join(srcDir, 'search.tsx'),
       background: path.join(srcDir, 'background.ts'),

@@ -1,11 +1,11 @@
 import { TrackedWindow } from "../../database/DatabaseSchema";
 import { rank } from "../rank";
-import { SearchCandidate, groupResults, SearchAction } from "../results";
+import { SearchActionResult, SearchCandidate, groupResults } from "../results";
 import { SearchFunction } from "../search";
 
 export const makeWindowSearch: (w: TrackedWindow) => SearchFunction =
   (w: TrackedWindow) => async (query: string) => {
-    let commands: SearchAction[] = [];
+    let commands: SearchActionResult[] = [];
     if (w.status === "open") {
       commands.push({
         id: "close-window",
@@ -49,9 +49,8 @@ export const makeWindowSearch: (w: TrackedWindow) => SearchFunction =
 
     });
 
-    const items: SearchCandidate[] = [];
 
-    const ranked = rank(query, [...items, ...commands])
+    const ranked = rank(query, commands)
 
 
     return groupResults(ranked);

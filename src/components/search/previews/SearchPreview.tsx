@@ -26,7 +26,7 @@ export const VirtualizedPreview: React.FC<{ frags: string[], startIndex: number,
     paddingEnd: 200,
     paddingStart: 20,
     count: frags.length,
-    overscan: 0,
+    overscan: 5,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 30,
   })
@@ -48,8 +48,8 @@ export const VirtualizedPreview: React.FC<{ frags: string[], startIndex: number,
       }
     }, 50);
   }, [startIndex])
-  const items = virtualizer.getVirtualItems()
 
+  const items = virtualizer.getVirtualItems()
 
   return (
 
@@ -97,7 +97,7 @@ export const VirtualizedPreview: React.FC<{ frags: string[], startIndex: number,
   )
 }
 
-const MarkdownLinePreview: React.FC<{ children: string, regex: RegExp }> = ({ children, regex }) => {
+const MarkdownLinePreview: React.FC<{ children: string, regex: RegExp }> = React.memo(({ children, regex }) => {
   return <div className="leading-normal prose prose-display">
     <ReactMarkdown
       remarkPlugins={[remarkMath]}
@@ -137,7 +137,7 @@ const MarkdownLinePreview: React.FC<{ children: string, regex: RegExp }> = ({ ch
       }}
     >{children}</ReactMarkdown >
   </div >
-}
+});
 
 export function highlightCode(code: string) {
   return code.split("**").map((x, i) => i % 2 === 0 ? x : <strong>{x}</strong>)

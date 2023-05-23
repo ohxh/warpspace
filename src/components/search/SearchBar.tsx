@@ -3,18 +3,17 @@ import { KBarResults, KBarSearch, useKBar, VisualState } from "kbar";
 import { useOuterClick } from "kbar/lib/utils";
 import React, { useEffect, useRef, useState } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { SearchActionResult } from "../../services/search/results";
+import { BaseSearchActionResult, SearchActionResult } from "../../services/search/results";
 import { search } from "../../services/search/search";
 import { SettingsModalInner } from "../settings/SettingsModal";
 import { WarpspaceIcon } from "../primitives/icons/warpspace";
 import { SearchContextChip } from "./SearchContextChip";
-import { SearchHelp } from "./SearchHelp";
 import { SearchResult, SearchSectionHeading } from "./SearchResult";
 import { useSetting } from "../../hooks/useSetting";
 
 import { KeyCap } from "../primitives/KeyCap";
 import { highlightChildren } from "./previews/highlightChildren";
-import { Favicon } from "../primitives/Favicon";
+import { Favicon, SmartFavicon } from "../primitives/Favicon";
 import { TabPreview } from "./previews/TabPreview";
 
 
@@ -202,7 +201,6 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 
   let [time, setTime] = useState(0);
 
-  const promise = useRef<any>(null);
   useEffect(() => {
     if (queryText === lastResolvedQueryText && context.length == lastResolvedContext) return;
     if (queryText === lastResolvedQueryText && queryText !== "") return;
@@ -221,9 +219,6 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 
       searcher!(queryText).then((t: any) => {
         setItems(t ?? [])
-        // if (t.filter((t: any) => typeof t !== "string")[0].inline)
-        //   setTimeout(() =>
-        //     query.setActiveIndex(x => { return x + 1 }));
         setLastResolvedQueryText(queryText)
         setLastResolvedContext(context.length)
         setLoading(false)
@@ -235,9 +230,8 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 
   const settingsOpen = context[0]?.title === "Settings"
 
-  const helpOpen = queryText === "?"
-  const showDebug = useSetting("developer.showSearchRankingReasons");
 
+  const showDebug = useSetting("developer.showSearchRankingReasons");
 
   if (queryText && !loading) searchedOnce.current = true;
 
@@ -345,10 +339,8 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 
     {global &&
       <div className="border-t border-ramp-200">
-        {helpOpen && <SearchHelp />}
-
         {items.length > 0 &&
-          <div className="flex flex-row" style={{ display: (settingsOpen || helpOpen) ? "none" : "" }}>
+          <div className="flex flex-row" style={{ display: (settingsOpen) ? "none" : "" }}>
             <div className="flex-[4] relative">
               {/* <div className="text-xs text-ramp-500 absolute right-4 top-2">
                 {items.length} results in {time.toFixed(2)}ms
@@ -363,7 +355,7 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 
 
               {/* <ScoreExplanation item={items[activeIndex] as ActionableRankedResult} /> */}
-              <SearchPreview item={items[activeIndex] as SearchActionResult} key="preview" />
+              <SearchPreview result={items[activeIndex] as SearchActionResult} key="preview" />
               <div className="overflow-hidden whitespace-nowrap text-ramp-700 text-sm p-4 pt-10 pb-3 bg-gradient-to-b from-transparent via-ramp-0 to-ramp-0 dark:via-ramp-100 dark:to-ramp-100 absolute bottom-0 left-0 right-0">
                 <KeyCap>Enter</KeyCap> to open
                 {(items[activeIndex] as any)?.children && <>, <KeyCap>Tab</KeyCap> to search within</>}</div>
@@ -384,7 +376,7 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 
 
         {items.length === 0 && (queryText.length > 0 || loading) && searchedOnce.current &&
-          <div className="select-none text-center w-full text-sm text-ramp-500 py-10 h-[400px] " style={{ display: (settingsOpen || helpOpen) ? "none" : "" }}>
+          <div className="select-none text-center w-full text-sm text-ramp-500 py-10 h-[400px] " style={{ display: (settingsOpen) ? "none" : "" }}>
             No results found.
 
           </div>}
@@ -392,7 +384,7 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 
     {!global && queryText.length > 0 &&
       <div className="border-t border-ramp-200 h-96">
-        <div className="select-none text-center w-full text-sm text-ramp-500 py-10 " style={{ display: (settingsOpen || helpOpen) ? "none" : "" }}>
+        <div className="select-none text-center w-full text-sm text-ramp-500 py-10 " style={{ display: (settingsOpen) ? "none" : "" }}>
           <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-focus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             {/* <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle> */}
             <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -430,42 +422,50 @@ function RenderResultsInner(props: { items: any[], effectiveQuery: any, effectiv
   );
 }
 
-export const ScoreExplanation: React.FC<{ item?: SearchActionResult }> = ({ item }) => {
+export const ScoreExplanation: React.FC<{ item?: BaseSearchActionResult }> = ({ item }) => {
   return <div className="m-2 p-2 rounded bg-ramp-100">
 
   </div>
 }
 
-const SearchPreview: React.FC<{ item?: SearchActionResult }> = ({ item }) => {
-  if (!item || item.type === "custom") return <>
+const SearchPreview: React.FC<{ result?: SearchActionResult }> = ({ result }) => {
+  if (!result) return <>
 
   </>
 
-  if (item.type === "visit" || item.type === "page") return <div className="px-4 py-4">
-
-    {/* {item.type} */}
-    {/* {item?.score} */}
-    <TabPreview tab={item.item} />
+  if (result.type === "page" || result.type === "visit") return <div className="px-4 py-4">
+    <TabPreview tab={result.item} />
     <div className="space-y-1 flex-1 min-w-0 mt-2">
       <div className="flex flex-row gap-x-2 items-center px-[0.125rem] ">
-        <h2 className="text-base text-ramp-900 overflow-ellipsis overflow-hidden">
-          <Favicon url={item.item?.url || ""} className="inline-block align-middle mb-0.5 w-[1.125rem] h-[1.125rem] rounded-sm leading-none mr-2" />
-          {highlightChildren(item.title, item.debug.regex)}
+        <h2 className={`text-base text-ramp-900 overflow-ellipsis ${result.title?.includes(" ") ? "break-words" : "break-all"}`}>
+          <div className="float-left mt-[0.1875rem] align-middle w-[1.125rem] h-[1.125rem] rounded-sm leading-none mr-2" ><SmartFavicon item={result.item} /></div>
+          {highlightChildren(result.title, result.debug.regex)}
         </h2>
+
       </div>
-      <p className="text-xs text-ramp-500 break-words max-lines-3 overflow-hidden">
-        {highlightChildren(item.url, item.debug.regex)}
+      <p className="text-xs text-ramp-500 break-all max-lines-3 overflow-hidden">
+        {highlightChildren(result.url, result.debug.regex)}
       </p>
-      {/* <p className="text-sm text-ramp-700 max-lines-3 overflow-hidden whitespace-pre-line"><HighlightedText text={item.body.value} ranges={item.body.highlight} /></p> */}
+      {/* <div className="pt-4 text-xs flex flex-col">
+        {result.type === "visit" && <p className="flex flex-row items-center gap-x-2">
+          <div className="rounded-full bg-focus w-1.5 h-1.5 align-middle inline-block"></div><span>Open tab</span>
+        </p>}
+        {result.type === "page" && <p>
+          Last open 2 days ago
+        </p>}
+        {result.type === "page" && <p>
+          Open in 5 windows
+        </p>}
+      </div> */}
+
     </div>
   </div >
 
 
-  if (item.type === "content") return <>
-    {console.log("RT search preview render")}
+  if (result.type === "content") return <>
     <div className={`shadow-inner `}>
       {/* @ts-ignore */}
-      <VirtualizedPreviewLazy frags={item.allFrags} startIndex={item.index} regex={item.debug.regex} />
+      <VirtualizedPreviewLazy frags={result.allFrags} startIndex={result.index} regex={result.debug.regex} />
     </div>
   </>
 

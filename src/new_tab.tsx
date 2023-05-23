@@ -6,7 +6,7 @@ import ReactDOM from "react-dom";
 import { WarpspaceIcon } from "./components/primitives/icons/warpspace";
 import { SearchBarModal } from "./components/search/SearchBar";
 import { LocalStorageImage } from "./components/primitives/LocalStorageImage";
-import { db, OpenTab, TrackedWindow } from "./services/database/DatabaseSchema";
+import { db, OpenVisit, TrackedWindow } from "./services/database/DatabaseSchema";
 import { compressCapturedPreview } from "./services/previews/CaptureVisibleTab";
 import { ImageStore } from "./services/previews/ImageStore";
 import { index } from "./services/search/DexieSearchIndex";
@@ -16,6 +16,7 @@ import { WarpspaceSettingsProvider } from "./services/settings/WarpspaceSettings
 import "./styles/style.css";
 import "./styles/theme.css";
 import "./styles/prose.css";
+import { createRoot } from "react-dom/client";
 
 export const SearchBar = () => {
   const { query, visualState } = useKBar(s => ({ visualState: s.visualState }));
@@ -105,13 +106,14 @@ const NewTabApp = () => {
   </div>
 };
 
-ReactDOM.render(
+const root = createRoot(document.getElementById("root")!);
+
+root.render(
   <React.StrictMode>
     <WarpspaceSettingsProvider>
       <NewTabApp />
     </WarpspaceSettingsProvider>
-  </React.StrictMode>,
-  document.getElementById("root")
+  </React.StrictMode>
 );
 
 
@@ -142,8 +144,8 @@ export const SuggestionResult3: React.FC<{ space: TrackedWindow, }> = ({ space, 
 
   const tabs2 = useLiveQuery(
     space.status === "open" ?
-      () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "open").toArray() as Promise<OpenTab[]>
-      : () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "closed" && x.closingReason === "window-closed").toArray() as Promise<OpenTab[]>)
+      () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "open").toArray() as Promise<OpenVisit[]>
+      : () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "closed" && x.closingReason === "window-closed").toArray() as Promise<OpenVisit[]>)
 
   const tabs = tabs2 ? tabs2.filter(t => t.metadata.previewImage) : [];
   return <>

@@ -5,7 +5,7 @@ import { ThemeRadio } from "./controls/ThemeRadio";
 
 export const AppearanceTab: React.FC<{}> = ({ }) => {
   return <div>
-    <ThemeRadio value={useSetting("appearance.theme") as any} onChange={useUpdateSetting("appearance.theme")} />
+    {/* <ThemeRadio value={useSetting("appearance.theme") as any} onChange={useUpdateSetting("appearance.theme")} /> */}
     <RadioControl
       label="Animations"
       value={useSetting("appearance.animations")}

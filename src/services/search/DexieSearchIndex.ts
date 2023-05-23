@@ -1,13 +1,11 @@
 import Dexie from "dexie";
-import { db, Page, TrackedWindow } from "../database/DatabaseSchema";
-import { separator, tokenize } from "./utils/tokenize";
-import { DexieFieldIndex } from "./DexieFieldIndex";
-import { fullTextScore } from "./utils/fullTextScore";
-import { pseudoSorensonDiceScore, trigrams } from "./utils/sorensonDice";
-import { SearchCandidate } from "./results";
-import { normalize } from "./utils/normalize";
-import { doc } from "prettier";
 import { Timer } from "../logging/log";
+import { DexieFieldIndex } from "./DexieFieldIndex";
+import { SearchCandidate } from "./results";
+import { fullTextScore } from "./utils/fullTextScore";
+import { normalize } from "./utils/normalize";
+import { pseudoSorensonDiceScore, trigrams } from "./utils/sorensonDice";
+import { separator, tokenize } from "./utils/tokenize";
 
 export interface SearchDoc {
   title: string;
@@ -132,7 +130,7 @@ export class DexieSearchIndex {
   ) {
     const t = performance.now();
 
-    console.log("Index " + id + ": " + doc.title);
+    console.log("Index " + id + ": " + Object.keys(doc).join(", "));
 
     await this.db.transaction(
       "rw",
@@ -173,10 +171,10 @@ export class DexieSearchIndex {
       }
     );
 
-    console.log(
-      "Finished indexing" + " in " + (performance.now() - t) + "ms",
-      doc
-    );
+    // console.log(
+    //   "Finished indexing" + " in " + (performance.now() - t) + "ms",
+    //   doc
+    // );
     return;
   }
 
@@ -208,13 +206,13 @@ export class DexieSearchIndex {
       }
     );
 
-    console.log(
-      "Finished indexing" +
-        docs.length +
-        " in " +
-        (performance.now() - t) +
-        "ms"
-    );
+    // console.log(
+    //   "Finished indexing" +
+    //     docs.length +
+    //     " in " +
+    //     (performance.now() - t) +
+    //     "ms"
+    // );
     return;
   }
 

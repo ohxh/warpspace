@@ -1,8 +1,9 @@
 import { SettingsIcon } from "../../../components/primitives/icons/settings";
 import { rank } from "../rank";
-import { WarpspaceCommand } from "../results";
+import { CommandSearchActionResult } from "../results";
 
-export const rootCommands: WarpspaceCommand[] = [
+
+export const rootCommands: CommandSearchActionResult[] = [
   // {
   //   id: "new-tab",
   //   title: "New Tab",

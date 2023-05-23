@@ -1,4 +1,4 @@
-import { WindowIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ChevronRightIcon, WindowIcon } from "@heroicons/react/24/outline";
 import React from "react";
 import { SearchActionResult } from "../../services/search/results";
 import { Favicon } from "../primitives/Favicon";
@@ -8,8 +8,7 @@ export const SearchContextChip: React.FC<{ item: SearchActionResult }> = ({ item
   return <div
     className={`py-2 text-base flex flex-row items-center gap-x-3`}
   >
-    {item.type === "visit" &&
-      <Favicon url={item.item?.url || ""} />}
+
     {item.type === "page" &&
       <Favicon url={item.item?.url || ""} />}
     {item.type === "command" && <FunctionIcon className="w-5 h-5 mt-0.5" />}

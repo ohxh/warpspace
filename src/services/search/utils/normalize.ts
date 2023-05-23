@@ -6,7 +6,7 @@
  * @returns Array of tokens as string
  */
 export function normalize(s: string) {
-  return s
+  return (s || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();

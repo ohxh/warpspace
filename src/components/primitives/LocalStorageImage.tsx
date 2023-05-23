@@ -16,6 +16,8 @@ const LocalStorageImageInner: React.FC<LocalStorageImageProps> = ({ srcKey, iref
         srcKey ? await x.get(srcKey) : "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==")
         || "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==");
     })()
+
+
   }, [srcKey])
   return <img alt={srcKey} onError={(e) => setImg("data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==")} {...props} ref={iref} src={img} />
 }

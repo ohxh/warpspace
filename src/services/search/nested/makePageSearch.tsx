@@ -11,7 +11,7 @@ import { Page } from "../../database/DatabaseSchema";
 import { getLiveSettings } from "../../settings/WarpspaceSettingsContext";
 import { index } from "../DexieSearchIndex";
 import { rank } from "../rank";
-import { groupResults, SearchCandidate, WarpspaceCommand } from "../results";
+import { CommandSearchActionResult, groupResults, SearchActionResult, SearchCandidate, } from "../results";
 import { SearchFunction } from "../search";
 
 const parser = remark();
@@ -24,9 +24,9 @@ const plaintext = (x: string) => {
 
 export const makePageSearch: (w: Page) => SearchFunction =
   (w: Page,) => {
-    let commands: WarpspaceCommand[];
-    let lastSearch: string = "";
-    let lastCommands: WarpspaceCommand[];
+    let commands: SearchActionResult[];
+    // let lastSearch: string = "";
+    // let lastCommands: WarpspaceCommand[];
 
     return async (query: string, maskedQuery?: string, max: number = Infinity) => {
       console.log("makePageSearch: " + maskedQuery)
@@ -37,49 +37,50 @@ export const makePageSearch: (w: Page) => SearchFunction =
         const frags = page?.body.split("\n").filter(Boolean) || [];
 
 
-        console.log({ frags, page })
+        console.log({ frags, filterd: frags.filter(x => x.match(/[a-z0-9]/gim)) })
 
         commands =
-          frags.map((s, i) => ({
-            id: i.toString(),
-            title: plaintext(s),
-            body: "",
-            //@ts-ignore
-            allFrags: frags,
-            //@ts-ignore
-            index: i,
-            url: "",
-            type: "content",
-            boost: (s.startsWith("###")
-              ? 1.14
-              : s.startsWith("##")
-                ? 1.16
+          frags
+            .map((s, i) => ({
+              id: i.toString(),
+              title: plaintext(s),
+              body: "",
+              //@ts-ignore
+              allFrags: frags,
+              //@ts-ignore
+              index: i,
+              url: "",
+              type: "content",
+              boost: (s.startsWith("###")
+                ? 1.14
+                : s.startsWith("##")
+                  ? 1.16
+                  : s.startsWith("#")
+                    ? 1.2
+                    : 1) * (1 + 1 / (i / 100 + 1) * 0.3),
+              icon: s.startsWith("[")
+                ? LinkIcon
                 : s.startsWith("#")
-                  ? 1.2
-                  : 1) * (1 + 1 / (i / 100 + 1) * 0.3),
-            icon: s.startsWith("[")
-              ? LinkIcon
-              : s.startsWith("#")
-                ? HashtagIcon
-                : s.startsWith("```")
-                  ? DataObjectIcon
-                  : NotesIcon,
-            perform: async () => {
-              const el = document.createElement("div");
+                  ? HashtagIcon
+                  : s.startsWith("```")
+                    ? DataObjectIcon
+                    : NotesIcon,
+              perform: async () => {
+                const el = document.createElement("div");
 
-              ReactDOM.render(<ReactMarkdown>{s}</ReactMarkdown>, el);
+                ReactDOM.render(<ReactMarkdown>{s}</ReactMarkdown>, el);
 
-              const id = await chrome.tabs.create({
-                url:
-                  page?.url + `#:~:text=${encodeURIComponent(el.innerText.trim())}`,
-              });
+                const id = await chrome.tabs.create({
+                  url:
+                    page?.url + `#:~:text=${encodeURIComponent(el.innerText.trim())}`,
+                });
 
-              ReactDOM.unmountComponentAtNode(el);
-              el.remove();
-            },
-          })) || [];
+                ReactDOM.unmountComponentAtNode(el);
+                el.remove();
+              },
+            })) || [];
 
-        commands = commands.filter(x => x.title !== "")
+        commands = commands.filter(x => x.title.match(/[a-z0-9]/gim))
       }
 
       const items: SearchCandidate[] = [];
@@ -95,9 +96,6 @@ export const makePageSearch: (w: Page) => SearchFunction =
       ranked = rank(query, [...items, ...commands], settings.developer.showHiddenResults, maskedQuery || "")
         .filter((x) => x.debug.finalScore >= (settings.developer.showHiddenResults ? -Infinity : x.debug.threshold));;
       // }
-
-      lastSearch = query;
-      lastCommands = ranked as WarpspaceCommand[];
 
       return groupResults(ranked);
     }

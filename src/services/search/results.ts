@@ -1,20 +1,6 @@
+import { type } from "os";
+import { Page, TrackedVisit, TrackedWindow } from "../database/DatabaseSchema";
 import { SearchFunction } from "./search";
-
-export interface WarpspaceCommand {
-  id: string;
-  type: "command" | "custom" | "content";
-
-  title: string;
-  body: string;
-  url: string;
-
-  icon?: React.FunctionComponent;
-
-  placeholder?: string;
-
-  perform?: (() => Promise<unknown>) | (() => void) | (() => Promise<string>);
-  children?: SearchFunction;
-}
 
 /** 
    Result referring to an item in the index. May correspond to multiple
@@ -31,41 +17,16 @@ export type SearchCandidate = {
   url: string;
 };
 
-/** Candidate (or command from other source) expanded with actual item, 
-action, children.
-*/
-export interface SearchAction {
-  id: string | number;
-  type:
-    | "page"
-    | "note"
-    | "visit"
-    | "command"
-    | "window"
-    | "custom"
-    | "setting"
-    | "content";
-
-  title: string;
-  body: string;
-  url: string;
-
-  placeholder?: string;
-
-  item?: any;
-
-  perform?: (() => Promise<unknown>) | (() => void) | (() => Promise<string>);
-  children?: SearchFunction;
-}
-
 /** Final result sent to the user, that they can actually do something with.
   Ranked and highlighted.
 */
-export interface SearchActionResult {
+export interface BaseSearchActionResult {
+  id?: any;
+
   type:
     | "page"
-    | "note"
     | "visit"
+    | "note"
     | "command"
     | "window"
     | "custom"
@@ -78,14 +39,49 @@ export interface SearchActionResult {
 
   icon?: React.FunctionComponent;
 
-  item?: any;
-
   perform?: (() => Promise<unknown>) | (() => void) | (() => Promise<string>);
   children?: SearchFunction;
   placeholder?: string;
 
-  debug: any;
+  debug?: any;
 }
+
+export interface PageSearchActionResult extends BaseSearchActionResult {
+  type: "page";
+  item: Page;
+}
+
+export interface VisitSearchActionResult extends BaseSearchActionResult {
+  type: "visit";
+  item: TrackedVisit;
+}
+
+export interface NoteSearchActionResult extends BaseSearchActionResult {
+  type: "note";
+}
+
+export interface CommandSearchActionResult extends BaseSearchActionResult {
+  type: "command";
+}
+
+export interface ContentearchActionResult extends BaseSearchActionResult {
+  type: "content";
+  index: number;
+  allFrags: string[];
+}
+
+export interface WindowSearchActionResult extends BaseSearchActionResult {
+  type: "window";
+  item: TrackedWindow;
+}
+
+export type SearchActionResult =
+  | PageSearchActionResult
+  | NoteSearchActionResult
+  | VisitSearchActionResult
+  | WindowSearchActionResult
+  | CommandSearchActionResult
+  | ContentearchActionResult;
 
 /** Group by type, ordered by best item in group */
 export function groupResults(
@@ -94,12 +90,13 @@ export function groupResults(
   const groups: { type: string; results: SearchActionResult[] }[] = [];
 
   results.forEach((r) => {
-    let group = groups.find((g) => g.type === r.type);
+    const type = r.type === "visit" ? "page" : r.type;
+    let group = groups.find((g) => g.type === type);
 
     //@ts-ignore
     if (group) group.results.push(r, ...(r.inline || []));
     //@ts-ignore
-    else groups.push({ type: r.type, results: [r, ...(r.inline || [])] });
+    else groups.push({ type, results: [r, ...(r.inline || [])] });
   });
 
   // Hide heading for custom items

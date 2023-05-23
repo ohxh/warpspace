@@ -54,12 +54,11 @@ export function scrapeBlockElement(el: HTMLElement): string {
   // Experimental -- Join all two-line blocks by a space instead of a newline
   if (
     textContent.split("\n").filter(Boolean).length === 2 &&
-    !textContent.includes("--") &&
     textContent.length < 50
   ) {
     textContent = textContent.replace(
       textContent.trim(),
-      textContent.trim().replace("\n", "--")
+      textContent.trim().replace("\n", "  ")
     );
   }
 

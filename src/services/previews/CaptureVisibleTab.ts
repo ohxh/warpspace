@@ -13,8 +13,6 @@ export async function captureVisibleTab(info: { windowId: number }) {
       format: "jpeg",
       quality: 40,
     });
-
-    console.log("API Call to capture", t0 - performance.now());
     return screenshot;
   } catch (e) {
     var tab = (
@@ -42,6 +40,5 @@ export async function compressCapturedPreview(screenshot: string) {
     linearDownsampleFactor: 4,
   });
 
-  console.log("CrunchPreview: ", performance.now() - t);
   return result;
 }

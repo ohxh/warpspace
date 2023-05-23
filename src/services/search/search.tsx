@@ -1,39 +1,53 @@
-import { debug, Timer } from "../logging/log";
-import { tokenize } from "./utils/tokenize";
+import { db, OpenVisit } from "../database/DatabaseSchema";
+import { Timer } from "../logging/log";
+import { getLiveSettings } from "../settings/WarpspaceSettingsContext";
 import { index } from "./DexieSearchIndex";
 import { makePageSearch } from "./nested/makePageSearch";
-import { makeTabSearch } from "./nested/makeTabSearch";
-import { makeWindowSearch } from "./nested/makeWindowSearch";
 import { rootCommands } from "./nested/rootCommands";
 import { makeFuzzyRegex, rank } from "./rank";
 import {
   groupResults,
-  SearchAction,
+  BaseSearchActionResult,
   SearchActionResult,
-  WarpspaceCommand
 } from "./results";
 import { normalize } from "./utils/normalize";
-import { settingSearchActions } from "../settings/search/settingSearchActions";
-import { db, OpenTab, Page } from "../database/DatabaseSchema";
-import { getLiveSettings } from "../settings/WarpspaceSettingsContext";
-import { filter } from "lodash";
+import { tokenize } from "./utils/tokenize";
 
 export type SearchFunction = (
   query: string,
   additionalHighlightQuery?: string,
   maxCount?: number,
-) => Promise<(string | SearchActionResult)[]>;
+) => Promise<(string | BaseSearchActionResult)[]>;
 
-
-let commands: WarpspaceCommand[];
-let lastSearch: string = "";
-let lastCommands: WarpspaceCommand[];
 
 /** Root level search function. */
 export const search: SearchFunction = async (query: string, additionalHighlightQuery: string | undefined) => {
   const t = new Timer()
 
-  let commands = [...rootCommands, ...settingSearchActions];
+  let commands = [...rootCommands];
+
+  if (query.trim() === "") {
+    const openVisits = await db.tabs.where("status").equals("open").toArray();
+
+    const results: BaseSearchActionResult[] = openVisits.map(v => {
+      const res: SearchActionResult = {
+        type: "visit",
+        title: v.metadata.title || "",
+        body: "",
+        url: v.url || "",
+        debug: {
+          score: 999,
+          threshold: 0,
+          finalScore: 9999,
+        },
+
+        item: v,
+      }
+      return res
+    })
+
+    return ["page", ...results];
+  }
 
   // if (query.startsWith(lastSearch) && lastSearch.length > 4 && lastCommands.length < 10 && false) {
 
@@ -68,8 +82,9 @@ export const search: SearchFunction = async (query: string, additionalHighlightQ
           return [];
         }
 
-        const openVisits = await db.tabs.where("[url+status]").equals([page.url, "open"]).toArray() as OpenTab[];
+        const openVisits = await db.tabs.where("[url+status]").equals([page.url, "open"]).toArray() as OpenVisit[];
 
+        console.log("QQQLLL No hits?", { openVisits, query: [page.url, "open"] })
         if (openVisits.length > 0) {
           return openVisits.map(v => ({
             ...i,
@@ -79,7 +94,7 @@ export const search: SearchFunction = async (query: string, additionalHighlightQ
           }))
         } else return {
           ...i,
-          type: page.url.startsWith("file") ? "file" as const : "visit" as const,
+          type: page.url.startsWith("file") ? "file" as const : "page" as const,
           item: page,
           page,
         }
@@ -94,7 +109,7 @@ export const search: SearchFunction = async (query: string, additionalHighlightQ
 
   t.mark("Split")
 
-  const commandified: SearchAction[] = splitDocs.map((i: any) => {
+  const commandified: SearchActionResult[] = splitDocs.map((i: any) => {
     //@ts-ignore
     if (i.type === "page") {
       return {
@@ -111,7 +126,7 @@ export const search: SearchFunction = async (query: string, additionalHighlightQ
     } else if (i.type === "visit" || i.type === "file") {
       return {
         ...i,
-        boost: 1 + (1 - 4 / ((i.page.typedCount || 0) + 4)) * 0.25,
+        boost: 1 + (1 - 4 / ((i.page.ranking.typedCount || 0) + 4)) * 0.25,
 
         perform: async () => {
           if (i.item.type === "visit")
@@ -133,10 +148,10 @@ export const search: SearchFunction = async (query: string, additionalHighlightQ
   t.mark("Commandify")
 
   const grouped = await makeSearch(query, [...commandified, ...commands], additionalHighlightQuery)
-
-  lastSearch = query;
   //@ts-ignore
-  lastCommands = grouped.filter(x => typeof x !== "string" && !x.isInline) as any as WarpspaceCommand[]
+  // lastSearch = query;
+  //@ts-ignore
+  // lastCommands = grouped.filter(x => typeof x !== "string" && !x.isInline) as any as WarpspaceCommand[]
   t.mark("Group")
 
   t.finish();
@@ -147,7 +162,7 @@ export const search: SearchFunction = async (query: string, additionalHighlightQ
 // };
 
 
-export async function makeSearch(query: string, options: SearchAction[], additionalHighlightQuery?: string) {
+export async function makeSearch(query: string, options: SearchActionResult[], additionalHighlightQuery?: string) {
 
   const settings = await getLiveSettings();
 
@@ -244,8 +259,8 @@ export async function makeSearch(query: string, options: SearchAction[], additio
       const nested = await s.children(query, mask);
 
       const filtered = nested.filter(
-        (x) => typeof x !== "string"
-      ) as SearchActionResult[];
+        (x: any) => typeof x !== "string"
+      ) as BaseSearchActionResult[];
 
       let maxNested: number;
       if (scored.length == 1) {

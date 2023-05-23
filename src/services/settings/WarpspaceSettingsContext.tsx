@@ -34,10 +34,6 @@ export const WarpspaceSettingsProvider: React.FC<{ defaults?: WarpspaceSettings,
   const [settings, setSettings] = useState<WarpspaceSettings | undefined>(defaults);
 
   const updateSettings = (x: WarpspaceSettings) => {
-    document.body.className = "theme";
-    document.body.classList.add(`theme-${x.appearance.theme}`);
-    document.body.classList.add(x.appearance.theme == "dark" ? "dark" : "light")
-    // document.body.classList.add(`row-width-${x.overview.tabsPerRow}`);
     setSettings(x);
   };
 

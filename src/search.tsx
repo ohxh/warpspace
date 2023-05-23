@@ -58,7 +58,6 @@ defaults.then(res => {
   const root = createRoot(div2)
 
   root.render(
-
     <WarpspaceSettingsProvider defaults={res}>
       <KBarProvider actions={[]} options={{
         animations: {

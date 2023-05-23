@@ -3,9 +3,9 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
-import { SearchActionResult } from "../../services/search/results";
+import { BaseSearchActionResult, SearchActionResult } from "../../services/search/results";
 import { useSetting } from "../../hooks/useSetting";
-import { Favicon } from "../primitives/Favicon";
+import { Favicon, SmartFavicon } from "../primitives/Favicon";
 import { highlightStringByRegex } from "./previews/syntax-highlighting/highlightStringByRegex";
 
 const highlightChildren = (children: React.ReactNode, regex: RegExp) => {
@@ -78,23 +78,26 @@ export const SearchResult: React.FC<{ item: SearchActionResult, active: boolean 
 
     </div>}
 
-    {(item.type === "visit" || item.type === "page") && <Favicon url={item.item?.url || ""} />}
+    {(item.type === "page" || item.type === "visit") && <SmartFavicon item={item.item} />}
 
 
     {Icon && <Icon />}
+
     {/* @ts-ignore */}
     {item.allFrags && <h2 className="inline flex-1 max-w-none text-base text-ramp-900 overflow-ellipsis whitespace-nowrap overflow-hidden prose prose-headings:text-base prose-headings:font-base prose-a:font-normal prose-a:no-underline prose-a:border-b prose-a:border-dashed prose-a:border-ramp-500">
       {/* @ts-ignore */}
-      <MarkdownInlinePreview text={stackTitles(item.index, item.allFrags)} regex={item.debug.regex} />
+      <MarkdownInlinePreview text={item.allFrags[item.index]} regex={item.debug.regex} />
     </h2>}
+
+
     {/* @ts-ignore */}
-    {!item.allFrags && <h2 className="inline flex-1 max-w-none text-base text-ramp-900 overflow-ellipsis whitespace-nowrap overflow-hidden">{highlightChildren(item.title, item.debug.regex)}
-
-      {!item.title.trim() && <span className="text-base text-ramp-900 overflow-hidden overflow-ellipsis whitespace-nowrap">{highlightChildren(item.url, item.debug.regex)}</span>}
+    {!item.allFrags && <h2 className="inline flex-1 max-w-none text-base text-ramp-900 overflow-ellipsis whitespace-nowrap overflow-hidden">
+      {highlightChildren(item.title, item.debug.regex)}
+      {!item.title?.trim() && <span className="text-base text-ramp-900 overflow-hidden overflow-ellipsis whitespace-nowrap">{highlightChildren(item.url, item.debug.regex)}</span>}
     </h2>}
 
-    {handleDelete &&
-      <div className={`group-hover:opacity-100 opacity-0
+    {handleDelete && active &&
+      <div className={`opacity-100
             absolute right-0 top-0 bottom-0 
             flex flex-row items-center
             pl-6 bg-gradient-to-r from-transparent
@@ -117,8 +120,7 @@ export const SearchResult: React.FC<{ item: SearchActionResult, active: boolean 
 
 export const SearchSectionHeading: React.FC<{ title: string }> = ({ title }) => {
   return <div className="px-4 py-2.5 uppercase text-xs tracking-wider text-ramp-500">
-    {title === "visit" && "tab"}
-    {title === "page" && "history"}
+    {title === "page" && "tab"}
     {!["visit", "page"].includes(title) && title}
   </div>
 }

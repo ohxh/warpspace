@@ -105,7 +105,7 @@ export class DexieFieldIndex {
       [this.options.id]: newValue.length,
     });
 
-    console.log("Indexed ", oldValue?.slice(0, 50), oldCounts, newCounts);
+    // console.log("Indexed ", oldValue?.slice(0, 50), oldCounts, newCounts);
 
     const additions = [...newCounts.entries()].filter(
       ([token, count]) => oldCounts.get(token) !== count

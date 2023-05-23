@@ -5,6 +5,7 @@ import { ReactMarkdown } from "react-markdown/lib/react-markdown";
 import "./styles/prose.css";
 import "./styles/style.css";
 import "./styles/theme.css";
+import { createRoot } from "react-dom/client";
 
 export const DevToolsPage: React.FC<{}> = ({ }) => {
 
@@ -36,9 +37,8 @@ export const DevToolsPage: React.FC<{}> = ({ }) => {
   </>
 }
 
-ReactDOM.render(
-  <React.StrictMode>
-    <DevToolsPage />
-  </React.StrictMode>,
-  document.getElementById("root")
-);
+const root = createRoot(document.getElementById("root")!);
+
+root.render(<React.StrictMode>
+  <DevToolsPage />
+</React.StrictMode>)

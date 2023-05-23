@@ -35,6 +35,7 @@ export class InjectedFrameController {
       });
     }
 
+    chrome.runtime.sendMessage({ event: `${this.name}-opened` });
     if (this.open) return;
 
     this.frame.focus();
@@ -44,6 +45,7 @@ export class InjectedFrameController {
   };
 
   close = () => {
+    chrome.runtime.sendMessage({ event: `${this.name}-closed` });
     if (!this.open) return;
 
     this.frame.remove();
