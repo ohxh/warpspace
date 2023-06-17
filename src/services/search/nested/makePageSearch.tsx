@@ -25,8 +25,6 @@ const plaintext = (x: string) => {
 export const makePageSearch: (w: Page) => SearchFunction =
   (w: Page,) => {
     let commands: SearchActionResult[];
-    // let lastSearch: string = "";
-    // let lastCommands: WarpspaceCommand[];
 
     return async (query: string, maskedQuery?: string, max: number = Infinity) => {
       console.log("makePageSearch: " + maskedQuery)

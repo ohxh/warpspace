@@ -17,5 +17,5 @@ export const HighlightedText: React.FC<{ text: string, ranges: [number, number][
   })
   highlights.push([text.slice(ranges[ranges.length - 1]?.[1] ?? 0, text.length), false])
   //@ts-ignore
-  return <>{highlights.map(([t, b]) => <span style={{ "-webkitTextStrokeWidth": b ? "1px" : "0px" }}>{t}</span>)}</>
+  return <>{highlights.map(([t, b], i) => <span style={{ "-webkitTextStrokeWidth": b ? "1px" : "0px" }} key={`${t}${b}${i}`}>{t}</span>)}</>
 }

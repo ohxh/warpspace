@@ -1,20 +1,22 @@
-import { ArrowLeftIcon, ChevronDownIcon } from "@heroicons/react/20/solid";
-import { KBarResults, KBarSearch, useKBar, VisualState } from "kbar";
+import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import { KBarResults, KBarSearch, VisualState, useKBar } from "kbar";
 import { useOuterClick } from "kbar/lib/utils";
 import React, { useEffect, useRef, useState } from "react";
 import { MemoryRouter } from "react-router-dom";
+import { useSetting } from "../../hooks/useSetting";
 import { BaseSearchActionResult, SearchActionResult } from "../../services/search/results";
 import { search } from "../../services/search/search";
-import { SettingsModalInner } from "../settings/SettingsModal";
 import { WarpspaceIcon } from "../primitives/icons/warpspace";
+import { SettingsModalInner } from "../settings/SettingsModal";
 import { SearchContextChip } from "./SearchContextChip";
 import { SearchResult, SearchSectionHeading } from "./SearchResult";
-import { useSetting } from "../../hooks/useSetting";
-
+import { SmartFavicon } from "../primitives/Favicon";
 import { KeyCap } from "../primitives/KeyCap";
-import { highlightChildren } from "./previews/highlightChildren";
-import { Favicon, SmartFavicon } from "../primitives/Favicon";
+import { DateVisitedDropdown } from "./DateVisitedDropdown";
+import { ItemTypeDropdown } from "./ItemTypeDropdown";
+import { SortOrderDropdown } from "./SortOrderDropdown";
 import { TabPreview } from "./previews/TabPreview";
+import { highlightChildren } from "./previews/highlightChildren";
 
 
 interface KBarAnimatorProps {
@@ -293,6 +295,7 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
             if (typeof current !== "string" && current.perform) {
               setLoading(true)
               let result = await current.perform();
+              query.setActiveIndex(0)
 
               query.setSearch("")
               setContext([])
@@ -305,6 +308,7 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
                 setItems(t ?? [])
                 setLastResolvedQueryText("")
                 setLastResolvedContext(context.length)
+                query.setActiveIndex(0)
 
                 setContext([...context, current as SearchActionResult])
                 query.setSearch("");
@@ -322,10 +326,9 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
     </div>
     <div className="w-full px-4 pt-0 flex flex-row gap-x-2 items-center transition-[height] min-h-0 overflow-hidden" style={{ height: (searchedOnce.current) ? "3em" : "0px" }}>
       <div className="flex-1 text-left"><KeyCap>↑</KeyCap> <KeyCap>↓</KeyCap> to select, <KeyCap>?</KeyCap> for help</div>
-      <div className="px-2 py-1 rounded border border-ramp-200 text-ramp-700 flex flex-row items-center">Best match <ChevronDownIcon className="w-4 h-4" /></div>
-      <div className="px-2 py-1 rounded border border-ramp-200 text-ramp-700">Recent</div>
-      <div className="px-2 py-1 rounded border border-ramp-200 text-ramp-700">Exact</div>
-      <div className="px-2 py-1 rounded border border-ramp-200 text-ramp-700">Best match</div>
+      <SortOrderDropdown sortOrder="relevance" setSortOrder={() => { }} />
+      <DateVisitedDropdown />
+      <ItemTypeDropdown />
 
     </div>
     {/* <SearchHelpBar /> */}

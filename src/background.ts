@@ -785,7 +785,6 @@ chrome.tabs.onAttached.addListener(attachTab);
 // chrome.tabs.onActivated.addListener(activateTab);
 chrome.runtime.onMessage.addListener(async (m, sender, sendResponse) => {
   if (m.event === "request-capture") {
-    info("request-capture", m, sender);
     captureTab();
   }
   if (m.event === "new-tab-open") {
