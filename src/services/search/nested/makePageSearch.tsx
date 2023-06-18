@@ -21,7 +21,6 @@ const plaintext = (x: string) => {
   return x.replaceAll(/(\[[\s\S]+?\])(\((https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})\))/gim, (m, p1) => p1)
 }
 
-
 export const makePageSearch: (w: Page) => SearchFunction =
   (w: Page,) => {
     let commands: SearchActionResult[];
@@ -85,12 +84,7 @@ export const makePageSearch: (w: Page) => SearchFunction =
 
       let ranked: any;
 
-      // if (query.startsWith(lastSearch) && lastSearch.length > 2 && false) {
-      //   console.log("Using page cache")
-      //   ranked = rank(query, [...lastCommands], settings.developer.showHiddenResults, maskedQuery || "");
-      // }
-      // else {
-      console.log("Not using page cache")
+
       ranked = rank(query, [...items, ...commands], settings.developer.showHiddenResults, maskedQuery || "")
         .filter((x) => x.debug.finalScore >= (settings.developer.showHiddenResults ? -Infinity : x.debug.threshold));;
       // }

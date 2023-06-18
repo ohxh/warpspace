@@ -147,19 +147,20 @@ export const SuggestionResult3: React.FC<{ space: TrackedWindow, }> = ({ space, 
       () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "open").toArray() as Promise<OpenVisit[]>
       : () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "closed" && x.closingReason === "window-closed").toArray() as Promise<OpenVisit[]>)
 
-  const tabs = tabs2 ? tabs2.filter(t => t.metadata.previewImage) : [];
+  const tabs = tabs2 ? [...tabs2.filter(t => t.metadata.previewImage), ...tabs2.filter(t => !t.metadata.previewImage)] : [];
   return <>
+    {tabs.length}
     <div className={`flex flex-col gap-x-4 group select-none cursor-pointer p-6 rounded-md`}>
       <div className="relative z-0 mr-8">
         {tabs?.slice(0, 1)?.map(tab => <div className="max-w-[16em] cursor-pointer group-active:opacity-80">
-          <LocalStorageImage srcKey={tab.metadata.previewImage || "none"} alt="" className={`bg-ramp-100 dark:bg-ramp-200 aspect-[16/9] w-full border border-ramp-300 rounded-md  object-cover`} />
+          <LocalStorageImage srcKey={tab.metadata?.previewImage || "none"} alt="" className={`bg-ramp-100 dark:bg-ramp-200 aspect-[16/9] w-full border border-ramp-300 rounded-md  object-cover`} />
           {/* <div className={`absolute inset-0 rounded-md transition-opacity `}></div> */}
         </div>
         )}
         {tabs?.slice(1, 5)?.map((tab, i) => <div className="max-w-[16em] cursor-pointer group-active:opacity-80 absolute top-0"
           style={{ transform: `translateX(${[20, 36, 50, 62][i]}px) scale(${[95, 89, 83, 76][i]}%)`, zIndex: -(i + 1) }}
         >
-          <LocalStorageImage srcKey={tab.metadata.previewImage || "none"} alt="" className={`bg-ramp-100 dark:bg-ramp-200 aspect-[16/9] w-full border border-ramp-300 rounded-md  object-cover`} />
+          <LocalStorageImage srcKey={tab.metadata?.previewImage || "none"} alt="" className={`bg-ramp-100 dark:bg-ramp-200 aspect-[16/9] w-full border border-ramp-300 rounded-md  object-cover`} />
           <div className={`absolute inset-0 rounded-md transition-opacity shadow-md`}></div>
         </div>
         )}

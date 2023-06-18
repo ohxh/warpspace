@@ -643,6 +643,8 @@ const addWindow = async (window: chrome.windows.Window, instant?: boolean) => {
 
     title: "",
 
+    searchId: new Date().getTime(),
+
     status: "open",
 
     position: {
@@ -826,22 +828,6 @@ chrome.runtime.onMessage.addListener(async (m, sender, sendResponse) => {
     info("Indexed scraped content", t, m.data);
   }
 
-  if (m.event === "rename-window") {
-    db.windows.update(m.data.id, {
-      title: m.data.title,
-      status: "full",
-    });
-    // TODO index windows by name
-    // db.windows.get(m.data.id).then((TrackedWindow) =>
-    //   index.index(`warpspace.app/window/${TrackedWindow!.id}`, {
-    //     title: m.data.title,
-    //     url: "",
-    //     body: "",
-    //     type: "window",
-    //   })
-    // );
-    return true;
-  }
   if (m.event === "search") {
     return true;
   }

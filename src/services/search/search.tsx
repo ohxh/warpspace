@@ -3,6 +3,8 @@ import { Timer } from "../logging/log";
 import { getLiveSettings } from "../settings/WarpspaceSettingsContext";
 import { index } from "./DexieSearchIndex";
 import { makePageSearch } from "./nested/makePageSearch";
+import { makeTabCommands } from "./nested/makeTabSearch";
+import { makeWindowCommands } from "./nested/makeWindowSearch";
 import { rootCommands } from "./nested/rootCommands";
 import { makeFuzzyRegex, rank } from "./rank";
 import {
@@ -24,12 +26,38 @@ export type SearchFunction = (
 export const search: SearchFunction = async (query: string, additionalHighlightQuery: string | undefined) => {
   const t = new Timer()
 
-  let commands = [...rootCommands];
+  const activeChromeTab = await chrome.tabs.getCurrent();
+  const activeChromeWindow = await chrome.windows.getCurrent();
+
+  const activeTab = await db.tabs.where("chromeId").equals(activeChromeTab.id!).first();
+  const activeWindow = await db.windows.where("chromeId").equals(activeChromeWindow.id!).first();
+
+  if (!activeTab) throw new Error("No active tab")
+  if (!activeWindow) throw new Error("No active window")
+
+  let commands = [...rootCommands, ...makeWindowCommands(activeWindow), ...makeTabCommands(activeTab)];
 
   if (query.trim() === "") {
+    const openWindows = await db.windows.where("status").equals("open").toArray();
     const openVisits = await db.tabs.where("status").equals("open").toArray();
 
-    const results: BaseSearchActionResult[] = openVisits.map(v => {
+    const windows = openWindows.map(w => {
+      const res: SearchActionResult = {
+        type: "window",
+        item: w,
+        title: w.title || "",
+        body: "",
+        url: "",
+        debug: {
+          score: 999,
+          threshold: 0,
+          finalScore: 9999,
+        },
+      }
+      return res;
+    });
+
+    const visits: BaseSearchActionResult[] = openVisits.map(v => {
       const res: SearchActionResult = {
         type: "visit",
         title: v.metadata.title || "",
@@ -46,7 +74,7 @@ export const search: SearchFunction = async (query: string, additionalHighlightQ
       return res
     })
 
-    return ["page", ...results];
+    return ["window", ...windows, "page", ...visits];
   }
 
   // if (query.startsWith(lastSearch) && lastSearch.length > 4 && lastCommands.length < 10 && false) {

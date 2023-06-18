@@ -1,4 +1,6 @@
+import { InsertTextIcon } from "../../../components/primitives/icons/insert_text";
 import { SettingsIcon } from "../../../components/primitives/icons/settings";
+import { TextFieldsIcon } from "../../../components/primitives/icons/text_fields";
 import { rank } from "../rank";
 import { CommandSearchActionResult } from "../results";
 
@@ -14,6 +16,7 @@ export const rootCommands: CommandSearchActionResult[] = [
   //     await chrome.tabs.create({});
   //   },
   // },
+
   {
     id: "settings",
 

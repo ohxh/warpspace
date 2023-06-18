@@ -1,7 +1,6 @@
-import { Separator } from "ariakit";
-
 export const separator =
   /[\s.,\/\\#!?@|<>$%\^&\*;:{}+\-=––—·•†‡◊¶⸿§©®_`…~()÷¿¡№"\[\]]+/g;
+
 /**
  * General-purpose tokenizer for web content after normalization.
  * Splits on camelCase, white space, and punctuation

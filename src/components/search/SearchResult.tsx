@@ -67,7 +67,8 @@ export const SearchResult: React.FC<{ item: SearchActionResult, active: boolean 
   let Icon = item.icon;
   const handleDelete = () => { }
   return <div
-    style={{//@ts-ignore
+    style={{
+      height: 40,//@ts-ignore
       paddingLeft: 16 + (item.isInline ?? 0) * 16,
       opacity: item.debug ? (item.debug.finalScore >= item.debug.threshold && !item.debug.duplicate ? 1 : 0.3) : 1,
     }}

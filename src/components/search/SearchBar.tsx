@@ -6,17 +6,22 @@ import { MemoryRouter } from "react-router-dom";
 import { useSetting } from "../../hooks/useSetting";
 import { BaseSearchActionResult, SearchActionResult } from "../../services/search/results";
 import { search } from "../../services/search/search";
-import { WarpspaceIcon } from "../primitives/icons/warpspace";
-import { SettingsModalInner } from "../settings/SettingsModal";
-import { SearchContextChip } from "./SearchContextChip";
-import { SearchResult, SearchSectionHeading } from "./SearchResult";
 import { SmartFavicon } from "../primitives/Favicon";
 import { KeyCap } from "../primitives/KeyCap";
+import { WarpspaceIcon } from "../primitives/icons/warpspace";
+import { SettingsModalInner } from "../settings/SettingsModal";
 import { DateVisitedDropdown } from "./DateVisitedDropdown";
 import { ItemTypeDropdown } from "./ItemTypeDropdown";
+import { SearchContextChip } from "./SearchContextChip";
+import { SearchResult, SearchSectionHeading } from "./SearchResult";
 import { SortOrderDropdown } from "./SortOrderDropdown";
 import { TabPreview } from "./previews/TabPreview";
 import { highlightChildren } from "./previews/highlightChildren";
+
+import { useLiveQuery } from "dexie-react-hooks";
+import { OpenVisit, TrackedWindow, db } from "../../services/database/DatabaseSchema";
+
+
 
 
 interface KBarAnimatorProps {
@@ -220,6 +225,7 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
       const t0 = performance.now();
 
       searcher!(queryText).then((t: any) => {
+        console.log(`Searched for "${queryText}" in ${performance.now() - t0}ms and got ${t?.length} results:`, t)
         setItems(t ?? [])
         setLastResolvedQueryText(queryText)
         setLastResolvedContext(context.length)
@@ -295,6 +301,11 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
             if (typeof current !== "string" && current.perform) {
               setLoading(true)
               let result = await current.perform();
+              window.top!.postMessage(
+                { event: "exit-search" },
+                { targetOrigin: "*" }
+              );
+
               query.setActiveIndex(0)
 
               query.setSearch("")
@@ -330,6 +341,7 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
       <DateVisitedDropdown />
       <ItemTypeDropdown />
 
+      {activeIndex}
     </div>
     {/* <SearchHelpBar /> */}
     {/* 
@@ -354,26 +366,25 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
                 effectiveContext={lastResolvedQueryText}
                 items={items} />
             </div>
-            <div className="self-stretch flex-[3] min-w-0  pb-10 border-l border-ramp-200 relative max-h-[400px] h-[400px] overflow-hidden">
+            {items[activeIndex] && !(context.length && context[context.length - 1].hidePreviewPanel) &&
+              < div className="self-stretch flex-[3] min-w-0  pb-10 border-l border-ramp-200 relative max-h-[400px] h-[400px] overflow-hidden">
+                {/* <ScoreExplanation item={items[activeIndex] as ActionableRankedResult} /> */}
+                <SearchPreview result={items[activeIndex] as SearchActionResult} key="preview" />
+                <div className="overflow-hidden whitespace-nowrap text-ramp-700 text-sm p-4 pt-10 pb-3 bg-gradient-to-b from-transparent via-ramp-0 to-ramp-0 dark:via-ramp-100 dark:to-ramp-100 absolute bottom-0 left-0 right-0">
+                  <KeyCap>Enter</KeyCap> to open
+                  {(items[activeIndex] as any)?.children && <>, <KeyCap>Tab</KeyCap> to search within</>}</div>
 
-
-              {/* <ScoreExplanation item={items[activeIndex] as ActionableRankedResult} /> */}
-              <SearchPreview result={items[activeIndex] as SearchActionResult} key="preview" />
-              <div className="overflow-hidden whitespace-nowrap text-ramp-700 text-sm p-4 pt-10 pb-3 bg-gradient-to-b from-transparent via-ramp-0 to-ramp-0 dark:via-ramp-100 dark:to-ramp-100 absolute bottom-0 left-0 right-0">
-                <KeyCap>Enter</KeyCap> to open
-                {(items[activeIndex] as any)?.children && <>, <KeyCap>Tab</KeyCap> to search within</>}</div>
-
-              {/* @ts-ignore */}
-              {showDebug && items[activeIndex].debug &&
-                <pre className="right-4 top-4 absolute rounded hover:rounded-none group text-white bg-black/70  h-min w-min font-mono hover:top-0 hover:right-0 hover:h-full hover:w-full hover:z-10 text-xs">
-                  <div className="group-hover:hidden z-50  flex flex-row gap-x-2 items-center p-1">
-                    info
-                  </div>
-                  <div className="group-hover:block hidden px-4 py-2" > {/* @ts-ignore */}
-                    {JSON.stringify(items[activeIndex].debug, null, 2)}
-                  </div>
-                </pre>}
-            </div>
+                {/* @ts-ignore */}
+                {showDebug && items[activeIndex].debug &&
+                  <pre className="right-4 top-4 absolute rounded hover:rounded-none group text-white bg-black/70  h-min w-min font-mono hover:top-0 hover:right-0 hover:h-full hover:w-full hover:z-10 text-xs">
+                    <div className="group-hover:hidden z-50  flex flex-row gap-x-2 items-center p-1">
+                      info
+                    </div>
+                    <div className="group-hover:block hidden px-4 py-2" > {/* @ts-ignore */}
+                      {JSON.stringify(items[activeIndex].debug, null, 2)}
+                    </div>
+                  </pre>}
+              </div>}
           </div>}
 
 
@@ -383,9 +394,11 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
             No results found.
 
           </div>}
-      </div>}
+      </div>
+    }
 
-    {!global && queryText.length > 0 &&
+    {
+      !global && queryText.length > 0 &&
       <div className="border-t border-ramp-200 h-96">
         <div className="select-none text-center w-full text-sm text-ramp-500 py-10 " style={{ display: (settingsOpen) ? "none" : "" }}>
           <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-focus" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -394,9 +407,10 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
           </svg>
           Indexing...
         </div>
-      </div>}
+      </div>
+    }
 
-  </SearchBarAnimator>
+  </SearchBarAnimator >
   {/* </KBarPositioner> */ }
   {/* </KBarPortal> */ }
 }
@@ -472,6 +486,11 @@ const SearchPreview: React.FC<{ result?: SearchActionResult }> = ({ result }) =>
     </div>
   </>
 
+  if (result.type === "window") return <div className="px-4 py-4">
+
+    <SuggestionResult3 space={result.item} />
+  </div>
+
   return <>  </>
 }
 
@@ -488,4 +507,53 @@ const VirtualizedPreviewLazy: React.FC<{ frags: string[], startIndex: number, re
   })
 
   return LazyComponent ? <LazyComponent frags={frags} startIndex={startIndex} regex={regex} /> : <></>
+}
+
+
+export const SuggestionResult3: React.FC<{ space: TrackedWindow, }> = ({ space, }) => {
+
+  const tabs2 = useLiveQuery(
+    space.status === "open" ?
+      () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "open").toArray() as Promise<OpenVisit[]>
+      : () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "closed" && x.closingReason === "window-closed").toArray() as Promise<OpenVisit[]>)
+
+  const tabs = tabs2 ? [...tabs2.filter(t => t.metadata.previewImage), ...tabs2.filter(t => !t.metadata.previewImage)] : [];
+
+  return <>
+    <div className="relative z-10">
+      {tabs[0] &&
+        <TabPreview tab={tabs[0]} />}
+      {tabs.slice(1).map((t, i) => <div className={`absolute top-0 left-0 w-[16em] origin-center hover:z-10 hover:scale-100 transition-all`} style={{ transform: `translateX(${[32, 58, 86, 110][i]}px) scale(${[95, 89, 83, 76][i]}%)`, zIndex: -(i + 1) }}>
+        <TabPreview tab={t} />
+      </div>)}
+    </div>
+
+    <div className="space-y-1 flex-1 min-w-0 mt-2">
+      <div className="flex flex-row gap-x-2 items-center px-[0.125rem] ">
+        {space.title && <h2 className={`text-base text-ramp-900 overflow-ellipsis ${space.title?.includes(" ") ? "break-words" : "break-all"}`}>
+          {space.title}
+        </h2>}
+        {!space.title && <h2 className={`text-base text-ramp-500 overflow-ellipsis ${space.title?.includes(" ") ? "break-words" : "break-all"}`}>
+          Untitled Space
+        </h2>}
+
+      </div>
+      <p className="text-xs text-ramp-500 break-all max-lines-3 overflow-hidden">
+        hiii
+      </p>
+      {/* <div className="pt-4 text-xs flex flex-col">
+      {result.type === "visit" && <p className="flex flex-row items-center gap-x-2">
+        <div className="rounded-full bg-focus w-1.5 h-1.5 align-middle inline-block"></div><span>Open tab</span>
+      </p>}
+      {result.type === "page" && <p>
+        Last open 2 days ago
+      </p>}
+      {result.type === "page" && <p>
+        Open in 5 windows
+      </p>}
+    </div> */}
+
+    </div>
+
+  </>
 }

@@ -7,20 +7,20 @@ const getOrigin = (x: string) => {
   if (base.startsWith("www.")) base = base.slice(4);
   base = base.slice(0, base.lastIndexOf("."));
 };
-export function makeFuzzyRegex(p: string) {
-  if (p.length === 1)
+export function makeFuzzyRegex(token: string) {
+  if (token.length === 1)
     return (
       '(?<=[\\s.,\\/\\\\#!?@|<>$%\\^&\\*;:{}+\\-=––—·•†‡◊¶⸿§©®_`…~()÷¿¡№"\\[\\]])' +
-      p +
+      token +
       "|^" +
-      p
+      token
     );
-  if (p.length <= 2) {
-    return p;
+  if (token.length <= 2) {
+    return token;
   }
-  if (p.length <= 3) {
-    let abbr = p.split("").map((x) => `[\\s\\-^]${x}[a-z]+`);
-    return `(${p}|${abbr})`;
+  if (token.length <= 3) {
+    let abbr = token.split("").map((x) => `[\\s\\-^]${x}[a-z]+`);
+    return `(${token}|${abbr})`;
   }
 
   let intraSlice = 1,
@@ -29,17 +29,17 @@ export function makeFuzzyRegex(p: string) {
     intraTrn = 1,
     intraDel = 1;
 
-  if (p.length == 4) {
+  if (token.length == 4) {
     intraDel = 0;
     intraSub = 0;
   }
 
   let lftIdx = 1,
     rgtIdx = Infinity;
-  let lftChar = p.slice(0, lftIdx); // prefix
-  let rgtChar = p.slice(rgtIdx); // suffix
+  let lftChar = token.slice(0, lftIdx); // prefix
+  let rgtChar = token.slice(rgtIdx); // suffix
 
-  let chars = p.slice(lftIdx, rgtIdx);
+  let chars = token.slice(lftIdx, rgtIdx);
 
   // neg lookahead to prefer matching 'Test' instead of 'tTest' in ManifestTest or fittest
   // but skip when search term contains leading repetition (aardvark, aaa)
@@ -93,11 +93,11 @@ export function makeFuzzyRegex(p: string) {
       );
   }
 
-  if (p.length <= 5) {
-    let abbr = p.split("").map((x) => `[\\s\\-^]${x}[a-z]+`);
+  if (token.length <= 5) {
+    let abbr = token.split("").map((x) => `[\\s\\-^]${x}[a-z]+`);
     variants.push(abbr);
   }
-  let reTpl = "(?:" + p + "|" + variants.join("|") + ")";
+  let reTpl = "(?:" + token + "|" + variants.join("|") + ")";
 
   //	console.log(reTpl);
 
@@ -106,14 +106,6 @@ export function makeFuzzyRegex(p: string) {
 
 function sum(...values: number[]) {
   return values.reduce((a, b) => a + b, 0);
-}
-
-function rm2s(...values: number[]) {
-  return sum(...values.map((x) => x ** 0.5)) ** 2;
-}
-
-function rms3(...values: number[]) {
-  return sum(...values.map((x) => x ** 3)) ** (1 / 3);
 }
 
 export function rank<

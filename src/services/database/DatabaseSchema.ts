@@ -109,6 +109,8 @@ export type TrackedWindow = {
 
   title: string;
 
+  searchId: number;
+
   focused: boolean;
 
   position: {

@@ -37,6 +37,8 @@ export interface BaseSearchActionResult {
   body: string;
   url: string;
 
+  hidePreviewPanel?: boolean;
+
   icon?: React.FunctionComponent;
 
   perform?: (() => Promise<unknown>) | (() => void) | (() => Promise<string>);
@@ -64,7 +66,7 @@ export interface CommandSearchActionResult extends BaseSearchActionResult {
   type: "command";
 }
 
-export interface ContentearchActionResult extends BaseSearchActionResult {
+export interface ContentSearchActionResult extends BaseSearchActionResult {
   type: "content";
   index: number;
   allFrags: string[];
@@ -81,7 +83,7 @@ export type SearchActionResult =
   | VisitSearchActionResult
   | WindowSearchActionResult
   | CommandSearchActionResult
-  | ContentearchActionResult;
+  | ContentSearchActionResult;
 
 /** Group by type, ordered by best item in group */
 export function groupResults(
