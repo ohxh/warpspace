@@ -7,6 +7,7 @@ import { BaseSearchActionResult, SearchActionResult } from "../../services/searc
 import { useSetting } from "../../hooks/useSetting";
 import { Favicon, SmartFavicon } from "../primitives/Favicon";
 import { highlightStringByRegex } from "./previews/syntax-highlighting/highlightStringByRegex";
+import { WindowIcon } from "@heroicons/react/24/solid";
 
 const highlightChildren = (children: React.ReactNode, regex: RegExp) => {
   return React.Children.map(children, (child) => {
@@ -79,9 +80,8 @@ export const SearchResult: React.FC<{ item: SearchActionResult, active: boolean 
 
     </div>}
 
+    {item.type === "window" && <WindowIcon className="w-5 h-5" />}
     {(item.type === "page" || item.type === "visit") && <SmartFavicon item={item.item} />}
-
-
     {Icon && <Icon />}
 
     {/* @ts-ignore */}
@@ -95,6 +95,7 @@ export const SearchResult: React.FC<{ item: SearchActionResult, active: boolean 
     {!item.allFrags && <h2 className="inline flex-1 max-w-none text-base text-ramp-900 overflow-ellipsis whitespace-nowrap overflow-hidden">
       {highlightChildren(item.title, item.debug.regex)}
       {!item.title?.trim() && <span className="text-base text-ramp-900 overflow-hidden overflow-ellipsis whitespace-nowrap">{highlightChildren(item.url, item.debug.regex)}</span>}
+      {item.type === "window" && !item.title && <span className="text-ramp-500">Untitled space</span>}
     </h2>}
 
     {handleDelete && active &&

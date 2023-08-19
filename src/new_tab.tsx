@@ -135,21 +135,32 @@ chrome.runtime.sendMessage({ event: "new-tab-open" })
 export const Suggestions: React.FC<{}> = ({ }) => {
   const recentspaces = useLiveQuery(async () => await db.windows.limit(4).toArray());
   return <div className="flex flex-row place-content-between items-end h-40 gap-x-4">
-    {recentspaces?.map(s => <SuggestionResult3 space={s} key={s.id} />)}
+    {recentspaces?.map(s => <WindowPreview space={s} key={s.id} />)}
   </div>
 }
 
 
-export const SuggestionResult3: React.FC<{ space: TrackedWindow, }> = ({ space, }) => {
+const tabCascadeOffset = [20, 36, 50, 62]
+const tabCascadeScale = [95, 89, 83, 76]
+
+export const WindowPreview: React.FC<{ space: TrackedWindow, }> = ({ space, }) => {
 
   const tabs2 = useLiveQuery(
     space.status === "open" ?
       () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "open").toArray() as Promise<OpenVisit[]>
-      : () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "closed" && x.closingReason === "window-closed").toArray() as Promise<OpenVisit[]>)
+      : () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "closed" && x.closingReason === "window-closed").toArray() as Promise<OpenVisit[]>) || []
 
-  const tabs = tabs2 ? [...tabs2.filter(t => t.metadata.previewImage), ...tabs2.filter(t => !t.metadata.previewImage)] : [];
+  const tabs = tabs2
+
+  const activeIndex = 3
+
+  const leftTabs = tabs.slice(0, activeIndex)
+  const rightTabs = tabs.slice(activeIndex + 1)
+  const activeTabs = tabs[activeIndex]
+  // Center active tab
+  // others cascade left and right
+
   return <>
-    {tabs.length}
     <div className={`flex flex-col gap-x-4 group select-none cursor-pointer p-6 rounded-md`}>
       <div className="relative z-0 mr-8">
         {tabs?.slice(0, 1)?.map(tab => <div className="max-w-[16em] cursor-pointer group-active:opacity-80">
@@ -158,7 +169,7 @@ export const SuggestionResult3: React.FC<{ space: TrackedWindow, }> = ({ space, 
         </div>
         )}
         {tabs?.slice(1, 5)?.map((tab, i) => <div className="max-w-[16em] cursor-pointer group-active:opacity-80 absolute top-0"
-          style={{ transform: `translateX(${[20, 36, 50, 62][i]}px) scale(${[95, 89, 83, 76][i]}%)`, zIndex: -(i + 1) }}
+          style={{ transform: `translateX(${[20, 36, 50, 62][i]}px) scale(${[i]}%)`, zIndex: -(i + 1) }}
         >
           <LocalStorageImage srcKey={tab.metadata?.previewImage || "none"} alt="" className={`bg-ramp-100 dark:bg-ramp-200 aspect-[16/9] w-full border border-ramp-300 rounded-md  object-cover`} />
           <div className={`absolute inset-0 rounded-md transition-opacity shadow-md`}></div>

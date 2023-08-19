@@ -2,7 +2,7 @@ import { InsertTextIcon } from "../../../components/primitives/icons/insert_text
 import { TrackedWindow, db } from "../../database/DatabaseSchema";
 import { index } from "../DexieSearchIndex";
 import { rank } from "../rank";
-import { CommandSearchActionResult, SearchActionResult, SearchCandidate, groupResults } from "../results";
+import { CommandSearchActionResult, groupResults } from "../results";
 import { SearchFunction } from "../search";
 
 export const makeWindowCommands: (w: TrackedWindow) => CommandSearchActionResult[] =
