@@ -1,7 +1,7 @@
 
 import { LockClosedIcon } from "@heroicons/react/20/solid";
 import React, { forwardRef } from "react";
-import { OpenVisit, Page, TrackedVisit } from "../../../services/database/DatabaseSchema";
+import { Page, TrackedVisit } from "../../../services/database/DatabaseSchema";
 import { Favicon } from "../../primitives/Favicon";
 import { LocalStorageImage } from "../../primitives/LocalStorageImage";
 
@@ -9,9 +9,12 @@ export interface TabPreviewProps extends React.DetailedHTMLProps<React.HTMLAttri
   tab: TrackedVisit | Page;
 }
 
+
+let currentTabId = 0;
+
+chrome.tabs.getCurrent((c) => currentTabId = c!.id!);
+
 export const TabPreview = forwardRef<HTMLDivElement, TabPreviewProps>(({ tab, }, ref) => {
-
-
   return <div
     className={`
       relative max-w-[16em] aspect-[16/9] cursor-default  group
@@ -32,7 +35,7 @@ export const TabPreview = forwardRef<HTMLDivElement, TabPreviewProps>(({ tab, },
       className={` absolute inset-0 
       rounded-md border border-ramp-300 dark:border-ramp-200
       object-cover object-left-top h-full w-full
-   
+  
       `}
     />
 

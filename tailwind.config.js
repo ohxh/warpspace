@@ -95,6 +95,7 @@ module.exports = {
       
     },
     colors: {
+      highlightFaint: "var(--highlight-faint-color)",
       highlight: "var(--highlight-color)",
       select: "var(--select-color)",
       focus: "var(--focus-color)",
@@ -143,16 +144,17 @@ module.exports = {
       // addVariant("aria-checked", '[aria-checked="true"] &');
       // addVariant("aria-selected", '[aria-selected="true"] &');
       // addVariant("drop-animation-active", ".drop-animation-active &");
-      // dataVariant("active", helpers);
-      // dataVariant("active-item", helpers);
-      // dataVariant("enter", helpers);
-      // dataVariant("leave", helpers);
-      // dataStateVariant("open", helpers);
-      // dataStateVariant("delayed-open", helpers);
-      // dataStateVariant("closed", helpers);
-      // dataStateVariant("on", helpers);
-      // dataStateVariant("checked", helpers);
-      // dataStateVariant("unchecked", helpers);
+      
+      dataVariant("active", helpers);
+      dataVariant("active-item", helpers);
+      dataVariant("enter", helpers);
+      dataVariant("leave", helpers);
+      dataStateVariant("open", helpers);
+      dataStateVariant("delayed-open", helpers);
+      dataStateVariant("closed", helpers);
+      dataStateVariant("on", helpers);
+      dataStateVariant("checked", helpers);
+      dataStateVariant("unchecked", helpers);
 
       // dataVariant("highlighted", helpers);
       // dataVariant("disabled", helpers);

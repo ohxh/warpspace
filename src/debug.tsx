@@ -7,9 +7,24 @@ import "./styles/prose.css";
 import "./styles/style.css";
 import "./styles/theme.css";
 import { normalizeURL } from "./utils/normalizeUrl";
-import { XMarkIcon } from "@heroicons/react/20/solid";
+import { ChevronDownIcon, ChevronUpIcon, XMarkIcon } from "@heroicons/react/20/solid";
 import { createRoot } from "react-dom/client";
 
+
+
+export const DebugPanel: React.FC<{ children: React.ReactNode, title: string }> = ({ children, title }) => {
+  const [open, setOpen] = useState(false)
+
+  return <div className="bg-black/70 font-mono text-white p-1 w-[24rem] flex flex-col">
+    <div className="flex flex-row"  >
+      <h2 className="flex-1">
+        {title}
+      </h2>
+      <button className="p-2 rounded-full" onClick={() => setOpen(x => !x)}>{open ? <ChevronDownIcon className="w-4 h-4" /> : <ChevronUpIcon className="2-4 h-4" />}</button>
+    </div>
+    {open && children}
+  </div>
+}
 
 export const Debug: React.FC = () => {
 
@@ -30,15 +45,16 @@ export const Debug: React.FC = () => {
   const tab = tabs?.[0] as OpenVisit;
   const visit = visits?.[0];
 
-  if (!tab) return <>... tab {chromeId}</>
-  if (!visit) return <>... visit</>
+  if (!tab) return <></>
+  if (!visit) return <></>
   return <>
-
-    <div className=" bg-black/70 font-mono text-white p-4 absolute left-0 bottom-0 max-w-sm">
-      <TabPreview tab={tab} />
-      <pre className="overflow-scroll text-xs p-2 whitespace-pre-wrap">
-        {JSON.stringify(tab, undefined, 1)}
-      </pre>
+    <div className=" absolute left-0 bottom-0 max-w-sm">
+      <DebugPanel title="Current tab">
+        <TabPreview tab={tab} />
+        <pre className="overflow-scroll text-xs p-2 whitespace-pre-wrap">
+          {JSON.stringify(tab, undefined, 1)}
+        </pre>
+      </DebugPanel>
     </div>
 
   </>

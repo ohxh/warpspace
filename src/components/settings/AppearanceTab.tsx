@@ -1,5 +1,5 @@
 import React from "react";
-import { RadioControl } from "../primitives/controls/Radio";
+import { RadioControl } from "../primitives/Radio";
 import { useSetting, useUpdateSetting } from "../../hooks/useSetting";
 import { ThemeRadio } from "./controls/ThemeRadio";
 

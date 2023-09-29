@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from "@heroicons/react/20/solid";
+import { ArrowLeftIcon, ClockIcon } from "@heroicons/react/20/solid";
 import { KBarResults, KBarSearch, VisualState, useKBar } from "kbar";
 import { useOuterClick } from "kbar/lib/utils";
 import React, { useEffect, useRef, useState } from "react";
@@ -20,6 +20,7 @@ import { highlightChildren } from "./previews/highlightChildren";
 
 import { useLiveQuery } from "dexie-react-hooks";
 import { OpenVisit, TrackedWindow, db } from "../../services/database/DatabaseSchema";
+import { CursorIcon } from "../primitives/icons/cursor";
 
 
 
@@ -199,6 +200,8 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
     query.setSearch(((document.getElementById("input") as HTMLInputElement)?.value || "") + queryText)
   }, [])
 
+
+
   const [lastResolvedQueryText, setLastResolvedQueryText] = useState("");
   const [lastResolvedContext, setLastResolvedContext] = useState(0);
   const [items, setItems] = useState<(string | SearchActionResult)[]>([])
@@ -242,6 +245,11 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
   const showDebug = useSetting("developer.showSearchRankingReasons");
 
   if (queryText && !loading) searchedOnce.current = true;
+
+  const previewScrollRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    previewScrollRef.current?.scrollTo({ top: 0 })
+  }, [activeIndex, query])
 
   return <SearchBarAnimator
     root={context[context.length - 1]}
@@ -367,9 +375,12 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
                 items={items} />
             </div>
             {items[activeIndex] && !(context.length && context[context.length - 1].hidePreviewPanel) &&
-              < div className="self-stretch flex-[3] min-w-0  pb-10 border-l border-ramp-200 relative max-h-[400px] h-[400px] overflow-hidden">
+              <div className="self-stretch flex-[3] min-w-0  pb-10 border-l border-ramp-200 relative max-h-[400px] h-[400px]">
                 {/* <ScoreExplanation item={items[activeIndex] as ActionableRankedResult} /> */}
-                <SearchPreview result={items[activeIndex] as SearchActionResult} key="preview" />
+
+                <div className="overflow-y-scroll absolute inset-0 pb-16" ref={previewScrollRef}>
+                  <SearchPreview result={items[activeIndex] as SearchActionResult} key="preview" />
+                </div>
                 <div className="overflow-hidden whitespace-nowrap text-ramp-700 text-sm p-4 pt-10 pb-3 bg-gradient-to-b from-transparent via-ramp-0 to-ramp-0 dark:via-ramp-100 dark:to-ramp-100 absolute bottom-0 left-0 right-0">
                   <KeyCap>Enter</KeyCap> to open
                   {(items[activeIndex] as any)?.children && <>, <KeyCap>Tab</KeyCap> to search within</>}</div>
@@ -445,6 +456,11 @@ export const ScoreExplanation: React.FC<{ item?: BaseSearchActionResult }> = ({ 
   </div>
 }
 
+
+let currentTabId = 0;
+
+chrome.tabs.getCurrent((c) => currentTabId = c!.id!);
+
 const SearchPreview: React.FC<{ result?: SearchActionResult }> = ({ result }) => {
   if (!result) return <>
 
@@ -460,9 +476,51 @@ const SearchPreview: React.FC<{ result?: SearchActionResult }> = ({ result }) =>
         </h2>
 
       </div>
-      <p className="text-xs text-ramp-500 break-all max-lines-3 overflow-hidden">
+      <p className="text-xs text-ramp-500 break-all max-lines-3 overflow-clip">
         {highlightChildren(result.url, result.debug.regex)}
       </p>
+
+      <div className="flex flex-col my-4 gap-y-1">
+
+        <div className="text-xs flex flex-row items-baseline">
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
+          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
+          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
+        </div>
+        <div className="text-xs flex flex-row items-baseline">
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
+          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
+          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
+        </div>
+        <div className="text-xs flex flex-row items-baseline">
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
+          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
+          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
+        </div>
+        <div className="text-xs flex flex-row items-baseline">
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
+          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
+          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
+        </div>
+        <div className="text-xs flex flex-row items-baseline">
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
+          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
+          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
+        </div>
+        <div className="text-xs flex flex-row items-baseline">
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
+          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
+          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
+          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
+        </div>
+      </div>
+
+
       {/* <div className="pt-4 text-xs flex flex-col">
         {result.type === "visit" && <p className="flex flex-row items-center gap-x-2">
           <div className="rounded-full bg-focus w-1.5 h-1.5 align-middle inline-block"></div><span>Open tab</span>

@@ -1,7 +1,7 @@
 import { CodeBracketIcon, ShieldCheckIcon, SparklesIcon, UserCircleIcon } from "@heroicons/react/24/solid";
 import React from "react";
 import { MemoryRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
-import { Modal } from "../primitives/controls/Modal";
+import { Modal } from "../primitives/Modal";
 import { DatabaseIcon } from "../primitives/icons/database";
 import { AccountTab } from "./AccountTab";
 import { AppearanceTab } from "./AppearanceTab";

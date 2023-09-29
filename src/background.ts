@@ -631,6 +631,30 @@ const attachTab = async (id: number, attachInfo: chrome.tabs.TabAttachInfo) => {
   info("Tab attached", `⌛ ${performance.now() - t}ms`);
 };
 
+const activateTab = async (activeInfo: chrome.tabs.TabActiveInfo) => {
+  await initialized;
+  const t = performance.now();
+  // We don't do anything on detach, so we need to complete the entire
+  // move between windows here
+
+  await db
+    .transaction("rw", db.tabs, db.windows, async (t) => {
+      const siblingTabs = (await db.tabs
+        .where("chromeWindowId")
+        .equals(activeInfo.windowId)
+        .toArray()) as OpenVisit[];
+
+      siblingTabs.map((t) => {
+        db.tabs.update(t.id, {
+          "state.active": t.chromeId == activeInfo.tabId,
+        });
+      });
+    })
+    .catch((x) => console.error("ActivateTab()", x));
+
+  info("Tab activated", `⌛ ${performance.now() - t}ms`);
+};
+
 const addWindow = async (window: chrome.windows.Window, instant?: boolean) => {
   if (!instant) await initialized;
   const t = performance.now();
@@ -784,7 +808,7 @@ chrome.tabs.onMoved.addListener(moveTab);
 chrome.tabs.onUpdated.addListener(updateTab);
 chrome.tabs.onAttached.addListener(attachTab);
 
-// chrome.tabs.onActivated.addListener(activateTab);
+chrome.tabs.onActivated.addListener(activateTab);
 chrome.runtime.onMessage.addListener(async (m, sender, sendResponse) => {
   if (m.event === "request-capture") {
     captureTab();

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { SwitchControl } from "../primitives/controls/Switch";
+import { SwitchControl } from "../primitives/Switch";
 
 /**
  * Format bytes as human-readable text.

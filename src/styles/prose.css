@@ -443,3 +443,7 @@ body {
 .prose-display hr {
   @apply border-0 border-b border-ramp-300 -mx-[1em];
  }
+
+ .highlight p, .highlight a {
+  background-color: yellow;
+ }

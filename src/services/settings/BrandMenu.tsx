@@ -9,7 +9,7 @@ import {
   DropdownMenu,
   Menu, MenuItem,
   MenuSeparator
-} from "../../components/primitives/controls/Menu";
+} from "../../components/primitives/Menu";
 import { SettingsModal } from "../../components/settings/SettingsModal";
 
 export const BrandMenu: React.FC<{}> = ({ }) => {

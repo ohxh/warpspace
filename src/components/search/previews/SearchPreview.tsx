@@ -9,6 +9,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import * as React from 'react';
 import { highlightChildren } from './highlightChildren';
 import 'katex/dist/katex.min.css'; // `rehype-katex` does not import the CSS for you
+import { highlight } from 'refractor';
 
 
 
@@ -86,7 +87,7 @@ export const VirtualizedPreview: React.FC<{ frags: string[], startIndex: number,
             >
               <div >
                 {/* @ts-ignore */}
-                <MarkdownLinePreview key={virtualRow.index} index={virtualRow.index} regex={virtualRow.index === startIndex ? regex || fake : fake}>{frags[virtualRow.index] || " "}</MarkdownLinePreview>
+                <MarkdownLinePreview key={virtualRow.index} index={virtualRow.index} regex={virtualRow.index === startIndex ? regex || fake : fake} highlight={virtualRow.index === startIndex}>{frags[virtualRow.index] || " "}</MarkdownLinePreview>
               </div>
             </div>
           ))}
@@ -97,8 +98,8 @@ export const VirtualizedPreview: React.FC<{ frags: string[], startIndex: number,
   )
 }
 
-const MarkdownLinePreview: React.FC<{ children: string, regex: RegExp }> = React.memo(({ children, regex }) => {
-  return <div className="leading-normal prose prose-display">
+const MarkdownLinePreview: React.FC<{ children: string, highlight: boolean, regex: RegExp }> = React.memo(({ children, highlight, regex }) => {
+  return <div className={`leading-normal prose prose-display`}>
     <ReactMarkdown
       remarkPlugins={[remarkMath]}
       rehypePlugins={[rehypeKatex]}

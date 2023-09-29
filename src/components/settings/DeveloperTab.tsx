@@ -1,6 +1,6 @@
 import React from "react";
-import { RadioControl } from "../primitives/controls/Radio";
-import { SwitchControl } from "../primitives/controls/Switch";
+import { RadioControl } from "../primitives/Radio";
+import { SwitchControl } from "../primitives/Switch";
 import { useSetting, useUpdateSetting } from "../../hooks/useSetting";
 
 export const DeveloperTab: React.FC<{}> = ({ }) => {
