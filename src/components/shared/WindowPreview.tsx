@@ -3,6 +3,7 @@ import React from "react";
 import { TrackedWindow, db, OpenVisit } from "../../services/database/DatabaseSchema";
 import { LocalStorageImage } from "../primitives/LocalStorageImage";
 import { CursorIcon } from "../primitives/icons/cursor";
+import { EditIcon } from "../primitives/icons/edit";
 
 
 const tabCascadeOffset = [10, 18, 25, 31]
@@ -61,7 +62,7 @@ export const WindowPreview: React.FC<{ window: TrackedWindow, }> = ({ window }) 
         <div className="flex flex-row gap-x-2 items-baseline place-content-center">
           {window.focused && <CursorIcon className="w-3 h-3  text-focus " />}
           <span className="text-ellipsis whitespace-nowrap overflow-hidden text-base" >
-            {(window).title || <span className="text-ramp-400 font-normal">Untitled space</span>}
+            {(window).title || <span className="text-ramp-400 font-normal">Untitled window</span>}
           </span>
         </div>
         {/* {highlighted && <div className="mt-1 text-sm text-ramp-900">Enter to open, space to add to current window, tab to view sub-loci</div>} */}

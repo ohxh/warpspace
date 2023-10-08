@@ -5,7 +5,7 @@ import { rank } from "../rank";
 import { CommandSearchActionResult, groupResults } from "../results";
 import { SearchFunction } from "../search";
 
-export const makeTabCommands: (
+export const makePageCommands: (
   w: TrackedVisit
 ) => CommandSearchActionResult[] = (w) => {
   let commands: CommandSearchActionResult[] = [
@@ -18,35 +18,7 @@ export const makeTabCommands: (
       url: "",
       placeholder: "Enter new name...",
       hidePreviewPanel: true,
-      children: async (query) =>
-        rank(
-          query,
-          query.trim()
-            ? [
-                {
-                  id: "hi",
-                  title: '"' + query.trim() + '"',
-                  body: "",
-                  url: "",
-                  score: 100,
-                  type: "custom" as const,
-                  perform: async () => {
-                    alert(query.trim());
-                    db.windows.update(w.windowId, {
-                      title: query.trim(),
-                      status: "full",
-                    });
-                    index.index(w.windowId, {
-                      title: query.trim(),
-                      url: "",
-                      body: "",
-                      type: "window",
-                    });
-                  },
-                },
-              ]
-            : []
-        ),
+      children: async (query) => rank(query, query.trim() ? [] : []),
     },
   ];
 

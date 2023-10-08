@@ -1,9 +1,5 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
-import {
-  Menu as BaseMenu,
-  MenuArrow,
-  MenuButton as BaseMenuButton, MenuButton, MenuButtonArrow, MenuDescription as BaseMenuDescription, MenuGroup as BaseMenuGroup, MenuGroupLabel as BaseMenuGroupLabel, MenuItem as BaseMenuItem, MenuItemCheck, MenuItemCheckbox as BaseMenuItemCheckbox, MenuSeparator as BaseMenuSeparator, MenuState, useMenuState
-} from "ariakit";
+import * as Ariakit from "@ariakit/react"
 import React, {
   forwardRef,
   HTMLAttributes,
@@ -16,10 +12,12 @@ import {
   Combobox,
   ComboboxItem,
   ComboboxList,
-  useComboboxState,
-} from "ariakit/combobox";
+  MenuButtonArrow,
+  MenuItemCheck,
+  MenuStoreState
+} from "@ariakit/react";
 
-export const Menu = React.forwardRef<HTMLDivElement, { state: MenuState, wide?: boolean, children?: React.ReactNode }>(({ state, wide, children }, ref) => {
+export const Menu = React.forwardRef<HTMLDivElement, { wide?: boolean, children?: React.ReactNode, getAnchorRect?: any }>(({ wide, children, getAnchorRect }, ref) => {
 
   return (
     <div onKeyDown={(e) => e.stopPropagation}
@@ -29,9 +27,12 @@ export const Menu = React.forwardRef<HTMLDivElement, { state: MenuState, wide?: 
       onDragEnd={(e) => e.stopPropagation}
       onDrag={(e) => e.stopPropagation}
     >
-      <BaseMenu
+      <Ariakit.Menu
+        as="div"
         ref={ref}
-        state={state}
+        gutter={8}
+        shift={0}
+        getAnchorRect={getAnchorRect}
         className={`
     ${wide ? "w-96" : "w-60"} bg-ramp-0 rounded-md
     dark:border dark:border-ramp-200 dark:bg-ramp-100
@@ -46,7 +47,7 @@ export const Menu = React.forwardRef<HTMLDivElement, { state: MenuState, wide?: 
    `}
       >
         {children}
-      </BaseMenu>
+      </Ariakit.Menu>
     </div>
   );
 });
@@ -62,7 +63,7 @@ export type MenuItemProps = HTMLAttributes<HTMLDivElement> & {
 export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
   ({ label, icon, shortcut, disabled, description, ...props }, ref) => {
     return (
-      <BaseMenuItem
+      <Ariakit.MenuItem
         className={`
         text-sm
         w-full pl-12 pr-3 py-1.5 relative select-none
@@ -87,7 +88,7 @@ export const MenuItem = forwardRef<HTMLDivElement, MenuItemProps>(
           )}
         </div>
         {description && <div className="text-sm text-ramp-500 pb-1">{description}</div>}
-      </BaseMenuItem>
+      </Ariakit.MenuItem>
     );
   }
 );
@@ -102,7 +103,7 @@ export type MenuItemCheckboxProps = HTMLAttributes<HTMLDivElement> & {
 export const MenuItemCheckbox = forwardRef<HTMLDivElement, MenuItemCheckboxProps>(
   ({ label, name, shortcut, disabled, ...props }, ref) => {
     return (
-      <BaseMenuItemCheckbox
+      <Ariakit.MenuItemCheckbox
         name={name}
         className={`
         text-sm
@@ -124,7 +125,7 @@ export const MenuItemCheckbox = forwardRef<HTMLDivElement, MenuItemCheckboxProps
             {shortcut}
           </div>
         )}
-      </BaseMenuItemCheckbox>
+      </Ariakit.MenuItemCheckbox>
     );
   }
 );
@@ -134,21 +135,14 @@ type Values = {
 }
 
 export function DropdownMenu<V extends Values = Values>({ trigger, values, onChange, children }: { trigger: React.ReactNode, values?: V, onChange?: (x: V) => void, children: React.ReactNode }) {
-  const menu = useMenuState<V>({
-    animated: true,
-    gutter: 8,
-    shift: 0,
-    setValues: onChange,
-    values: values,
-  });
 
   return (
-    <>
-      <BaseMenuButton state={menu as any}>
+    <Ariakit.MenuProvider animated values={values} setValues={onChange}>
+      <Ariakit.MenuButton>
         {trigger}
-      </BaseMenuButton>
-      <Menu state={menu as any}>{children}</Menu>
-    </>
+      </Ariakit.MenuButton>
+      <Menu >{children}</Menu>
+    </Ariakit.MenuProvider>
   );
 };
 
@@ -156,13 +150,7 @@ export function DropdownMenu<V extends Values = Values>({ trigger, values, onCha
 export function ContextMenu<V extends Values = Values>({ menuItems, values, onChange, children }: { menuItems: React.ReactNode, values?: V, onChange?: (x: V) => void, children: React.ReactNode }) {
   const [anchorRect, setAnchorRect] = useState({ x: 0, y: 0 });
   const wrapper = useRef<HTMLDivElement>(null)
-  const menu = useMenuState({
-    getAnchorRect: () => anchorRect, animated: true,
-    gutter: 8,
-    shift: 0,
-    setValues: onChange,
-    values: values,
-  });
+  const menu = Ariakit.useMenuStore();
   return (
     <div
       className="wrapper"
@@ -182,10 +170,17 @@ export function ContextMenu<V extends Values = Values>({ menuItems, values, onCh
       }}
     >
       {children}
-      <Menu
-        state={menu as any}>
-        {menuItems}
-      </Menu>
+      <Ariakit.MenuProvider
+        store={menu}
+        values={values}
+        setValues={onChange}
+      >
+        <Menu
+          getAnchorRect={() => anchorRect}>
+          {menuItems}
+        </Menu>
+      </Ariakit.MenuProvider>
+
     </div>
   )
 };
@@ -202,15 +197,10 @@ type MenuButtonProps = HTMLAttributes<HTMLDivElement> &
 
 export const SubMenu = forwardRef<HTMLDivElement, SubMenuProps>(
   ({ label, icon, children, ...props }, ref) => {
-    const menu = useMenuState({
-      animated: true,
-      gutter: 0,
-      shift: -8,
-    });
 
     return (
       <>
-        <BaseMenuItem
+        <Ariakit.MenuItem
           ref={ref}
           {...props}
           className={`
@@ -220,8 +210,7 @@ export const SubMenu = forwardRef<HTMLDivElement, SubMenuProps>(
       `}
         >
           {(props: MenuButtonProps) =>
-            <BaseMenuButton
-              state={menu}
+            <Ariakit.MenuButton
               {...props}
               className="py-1.5 pl-12 pr-3
             w-full flex flex-row items-center relative select-none
@@ -238,31 +227,29 @@ export const SubMenu = forwardRef<HTMLDivElement, SubMenuProps>(
               <MenuButtonArrow className="absolute right-3" >
                 <ChevronRightIcon />
               </MenuButtonArrow>
-            </BaseMenuButton>}
-        </BaseMenuItem>
-        <Menu state={menu}>{children}</Menu>
+            </Ariakit.MenuButton>}
+        </Ariakit.MenuItem>
+        <Menu>{children}</Menu>
       </>
     );
   }
 );
 
 export const MenuSeparator: React.FC<{}> = ({ }) => {
-  return <BaseMenuSeparator className="border-ramp-200 my-2" />;
+  return <Ariakit.MenuSeparator className="border-ramp-200 my-2" />;
 };
 
 export const MenuLabel: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-  return <BaseMenuGroupLabel className="uppercase tracking-wider text-gray-500 text-xs">{children}</BaseMenuGroupLabel>;
+  return <Ariakit.MenuGroupLabel className="uppercase tracking-wider text-gray-500 text-xs">{children}</Ariakit.MenuGroupLabel>;
 };
 
 export const MenuGroup: React.FC<{}> = ({ }) => {
-  return <BaseMenuGroup />
+  return <Ariakit.MenuGroup />
 }
 
 export const MenuDescription: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
-  return <BaseMenuDescription as="div" className="px-3 py-2 text-xs text-ramp-500">{children}</BaseMenuDescription>
+  return <Ariakit.MenuDescription as="div" className="px-3 py-2 text-xs text-ramp-500">{children}</Ariakit.MenuDescription>
 }
-
-
 const defaultList = [
   "Paragraph",
   "Heading",
@@ -301,90 +288,90 @@ const defaultList = [
 ];
 
 
-export const ComboSubMenu = forwardRef<HTMLDivElement, SubMenuProps>(
-  ({ label, icon, children, ...props }, ref) => {
+// export const ComboSubMenu = forwardRef<HTMLDivElement, SubMenuProps>(
+//   ({ label, icon, children, ...props }, ref) => {
 
-    const combobox = useComboboxState({
-      defaultList,
-      animated: true,
-      placement: "right-start",
-      gutter: 0,
-      shift: -8,
+//     const combobox = useComboboxState({
+//       defaultList,
+//       animated: true,
+//       placement: "right-start",
+//       gutter: 0,
+//       shift: -8,
 
-    });
+//     });
 
-    const menu = useMenuState(combobox);
+//     const menu = useMenuState(combobox);
 
-    // Resets combobox value when menu is closed
-    if (!menu.mounted && combobox.value) {
-      combobox.setValue("");
-    }
+//     // Resets combobox value when menu is closed
+//     if (!menu.mounted && combobox.value) {
+//       combobox.setValue("");
+//     }
 
-    return (
-      <>
-        <BaseMenuItem
-          ref={ref}
-          {...props}
-          className={`
-        data-disabled:text-ramp-500 data-disabled:pointer-events-none
-        active:bg-ramp-100 data-active:bg-ramp-100 data-active-item:bg-ramp-100
-        outline-none
-      `}
-        >
-          {(props: MenuButtonProps) =>
-            <BaseMenuButton
-              state={menu}
-              {...props}
-              className="py-1.5 pl-12 pr-3
-            w-full flex flex-row items-center relative select-none
-            leading-4 text-ramp-900
-            outline-none
-            data-active-item:bg-ramp-100
-            "
-            >
-              {icon && (
-                <div className="absolute left-3 text-ramp-900"> {icon}</div>
-              )}
-              {label}
-              <MenuButtonArrow className="absolute right-3" >
-                <ChevronRightIcon />
-              </MenuButtonArrow>
-            </BaseMenuButton>}
-        </BaseMenuItem>
-        <Menu state={menu} wide>
-          <div className="w-full px-1 py-1.5 border-b border-ramp-200 mb-1.5">
-            <Combobox
-              state={combobox}
-              autoSelect
-              placeholder="Search..."
-              className="w-full rounded ring-none outline-none px-2 text-base leading-4"
-            />
-          </div>
+//     return (
+//       <>
+//         <Ariakit.MenuItem
+//           ref={ref}
+//           {...props}
+//           className={`
+//         data-disabled:text-ramp-500 data-disabled:pointer-events-none
+//         active:bg-ramp-100 data-active:bg-ramp-100 data-active-item:bg-ramp-100
+//         outline-none
+//       `}
+//         >
+//           {(props: MenuButtonProps) =>
+//             <Ariakit.MenuButton
+//               state={menu}
+//               {...props}
+//               className="py-1.5 pl-12 pr-3
+//             w-full flex flex-row items-center relative select-none
+//             leading-4 text-ramp-900
+//             outline-none
+//             data-active-item:bg-ramp-100
+//             "
+//             >
+//               {icon && (
+//                 <div className="absolute left-3 text-ramp-900"> {icon}</div>
+//               )}
+//               {label}
+//               <MenuButtonArrow className="absolute right-3" >
+//                 <ChevronRightIcon />
+//               </MenuButtonArrow>
+//             </Ariakit.MenuButton>}
+//         </Ariakit.MenuItem>
+//         <Menu state={menu} wide>
+//           <div className="w-full px-1 py-1.5 border-b border-ramp-200 mb-1.5">
+//             <Combobox
+//               state={combobox}
+//               autoSelect
+//               placeholder="Search..."
+//               className="w-full rounded ring-none outline-none px-2 text-base leading-4"
+//             />
+//           </div>
 
-          <ComboboxList state={combobox} className="combobox-list max-h-96 overflow-scroll">
-            {combobox.matches.map((value, i) => (
-              <div
-                key={value}
-                onClick={() => { menu.hideAll() }}
-                onKeyDown={(e) => { if (e.key === "Enter") { menu.hideAll() } }}
-              >
-                <ComboboxItem
-                  key={value + i}
-                  value={value}
-                  focusOnHover
-                  setValueOnClick={false}
-                  className="
-                w-full pl-3 pr-3 py-1.5 relative select-none
-                active:bg-ramp-100 data-active:bg-ramp-100 data-active-item:bg-ramp-100
-                outline-none
-                leading-4 "
-                />
-              </div>
-            ))}
-          </ComboboxList>
+//           <ComboboxList state={combobox} className="combobox-list max-h-96 overflow-scroll">
+//             {combobox.matches.map((value, i) => (
+//               <div
+//                 key={value}
+//                 onClick={() => { menu.hideAll() }}
+//                 onKeyDown={(e) => { if (e.key === "Enter") { menu.hideAll() } }}
+//               >
+//                 <ComboboxItem
+//                   key={value + i}
+//                   value={value}
+//                   focusOnHover
+//                   setValueOnClick={false}
+//                   className="
+//                 w-full pl-3 pr-3 py-1.5 relative select-none
+//                 active:bg-ramp-100 data-active:bg-ramp-100 data-active-item:bg-ramp-100
+//                 outline-none
+//                 leading-4 "
+//                 />
+//               </div>
+//             ))}
+//           </ComboboxList>
 
-        </Menu>
-      </>
-    );
-  }
-);
+//         </Menu>
+//       </>
+//     );
+//   }
+// );

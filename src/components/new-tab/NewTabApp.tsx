@@ -6,6 +6,9 @@ import { useLiveQuery } from "dexie-react-hooks";
 import { db } from "../../services/database/DatabaseSchema";
 import { WindowPreview } from "../shared/WindowPreview";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { Select, SelectItem } from "../primitives/Select";
+
+
 
 export const NewTabApp: React.FC<{}> = ({ }) => {
 
@@ -19,6 +22,11 @@ export const NewTabApp: React.FC<{}> = ({ }) => {
           <WindowPreview window={s} key={s.id} />
         </div>)}
       </div>
+    </div>
+
+    <div className="w-20 bg-ramp-400">
+
+
     </div>
 
     <FooterBar />

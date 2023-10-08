@@ -3,8 +3,6 @@ import React, { useEffect, useState } from "react";
 import { WarpspaceEvent } from "../../utils/WarpspaceEvent";
 import { defaultSettings, WarpspaceSettings } from "./settings";
 
-
-
 export const appSettingsContext =
   //@ts-ignore
   React.createContext<[WarpspaceSettings, (x: WarpspaceSettings) => void]>(null);
@@ -31,22 +29,19 @@ export async function getLiveSettings() {
 
 
 export const WarpspaceSettingsProvider: React.FC<{ defaults?: WarpspaceSettings, children?: React.ReactNode }> = ({ children, defaults }) => {
-  const [settings, setSettings] = useState<WarpspaceSettings | undefined>(defaults);
-
-  const updateSettings = (x: WarpspaceSettings) => {
-    setSettings(x);
-  };
+  const [settings, setSettings] = useState<WarpspaceSettings | undefined>(undefined);
 
   useEffect(() => {
     const listener = (changes: { [key: string]: any }, areaName: string) => {
       if (areaName !== "local" || !changes.hasOwnProperty("warpspaceSettings"))
         return;
-      updateSettings({ ...defaultSettings, ...changes["warpspaceSettings"].newValue });
+
+      setSettings({ ...defaultSettings, ...changes["warpspaceSettings"].newValue });
     };
 
     chrome.storage.onChanged.addListener(listener);
     chrome.storage.local.get("warpspaceSettings").then((v) => {
-      updateSettings({ ...defaultSettings, ...v["warpspaceSettings"] });
+      setSettings({ ...defaultSettings, ...v["warpspaceSettings"] });
     });
 
     return () => chrome.storage.onChanged.removeListener(listener);

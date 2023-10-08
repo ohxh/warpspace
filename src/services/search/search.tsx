@@ -1,16 +1,22 @@
+import { map } from "lodash";
+import { currentTabId } from "../../utils/currentTabId";
+import { normalizeURL } from "../../utils/normalizeUrl";
+import { openSavedWindow } from "../actions/openSavedWindow";
 import { db, OpenVisit } from "../database/DatabaseSchema";
 import { Timer } from "../logging/log";
 import { getLiveSettings } from "../settings/WarpspaceSettingsContext";
 import { index } from "./DexieSearchIndex";
 import { makePageSearch } from "./nested/makePageSearch";
-import { makeTabCommands } from "./nested/makeTabSearch";
-import { makeWindowCommands } from "./nested/makeWindowSearch";
+import { makePageCommands, makeTabSearch } from "./nested/makeTabSearch";
+import { makeWindowCommands, makeWindowSearch } from "./nested/makeWindowSearch";
 import { rootCommands } from "./nested/rootCommands";
 import { makeFuzzyRegex, rank } from "./rank";
 import {
   groupResults,
   BaseSearchActionResult,
   SearchActionResult,
+  PageSearchActionResult,
+  WindowSearchActionResult,
 } from "./results";
 import { normalize } from "./utils/normalize";
 import { tokenize } from "./utils/tokenize";
@@ -19,11 +25,11 @@ export type SearchFunction = (
   query: string,
   additionalHighlightQuery?: string,
   maxCount?: number,
-) => Promise<(string | BaseSearchActionResult)[]>;
+) => Promise<(string | SearchActionResult)[]>;
 
 
 /** Root level search function. */
-export const search: SearchFunction = async (query: string, additionalHighlightQuery: string | undefined) => {
+export const rootSearch: SearchFunction = async (query: string, additionalHighlightQuery: string | undefined) => {
   const t = new Timer()
 
   const activeChromeTab = await chrome.tabs.getCurrent();
@@ -35,97 +41,110 @@ export const search: SearchFunction = async (query: string, additionalHighlightQ
   if (!activeTab) throw new Error("No active tab")
   if (!activeWindow) throw new Error("No active window")
 
-  let commands = [...rootCommands, ...makeWindowCommands(activeWindow), ...makeTabCommands(activeTab)];
+  let commands = [...rootCommands];
 
   if (query.trim() === "") {
     const openWindows = await db.windows.where("status").equals("open").toArray();
-    const openVisits = await db.tabs.where("status").equals("open").toArray();
+    const openVisits = (await db.tabs.where("status").equals("open").toArray() as OpenVisit[]);
+    const openPages = await db.pages.bulkGet(openVisits.map(x => normalizeURL(x.url)))
 
-    const windows = openWindows.map(w => {
+    const currentWindowId = openVisits.find(v => v.chromeId === currentTabId)?.windowId
+    const windows = openWindows.
+      sort((a, b) => {
+        if (a.id === currentWindowId) return -1
+        else if (b.id === currentWindowId) return 1
+        else if (a.title) return -1
+        else if (b.title) return 1
+        else return 0
+
+      }).
+      map(w => {
+        const res: SearchActionResult = {
+          type: "window",
+          item: w,
+          title: w.title || "",
+          body: "",
+          url: "",
+          debug: {
+            score: 999,
+            threshold: 0,
+            finalScore: 9999,
+          },
+          /** @ts-ignore */
+          ntabs: openVisits.filter(t => t.windowId === w.id).length,
+          children: makeWindowSearch(w),
+        }
+        return res;
+      });
+
+    let visits: PageSearchActionResult[] = await Promise.all(openPages.map(async t => {
       const res: SearchActionResult = {
-        type: "window",
-        item: w,
-        title: w.title || "",
-        body: "",
-        url: "",
+        type: "page",
+        item: t!,
+        title: t!.metadata.title || "",
+        id: t?.url,
+        body: (await index.get(t!.searchId))?.body || "",
+        url: t!.url,
         debug: {
           score: 999,
           threshold: 0,
           finalScore: 9999,
         },
+        visits: (await db.tabs.where("url").equals(t!.url).toArray()).sort((a, b) => {
+          // Active -> most recently opened -> most recently closed
+          if (a.status === "open" && a.chromeId === currentTabId) return -1
+          else if (b.status === "open" && b.chromeId === currentTabId) return 1
+          else if (b.status === "open" && a.status === "open") return b.openedAt.getTime() - a.openedAt.getTime()
+          else if (a.status === "open") return -1
+          else if (b.status === "open") return 1
+          else return b.closedAt.getTime() - a.closedAt.getTime()
+        }),
+        children: makePageSearch(t!),
       }
       return res;
-    });
+    }));
 
-    const visits: BaseSearchActionResult[] = openVisits.map(v => {
-      const res: SearchActionResult = {
-        type: "visit",
-        title: v.metadata.title || "",
-        body: "",
-        url: v.url || "",
-        debug: {
-          score: 999,
-          threshold: 0,
-          finalScore: 9999,
-        },
 
-        item: v,
-      }
-      return res
+    visits = visits.sort((a, b) => {
+      // Active -> most recently opened -> most recently closed
+      if (a.visits[0].status === "open" && a.visits[0].chromeId === currentTabId) return -1
+      else if (b.visits[0].status === "open" && b.visits[0].chromeId === currentTabId) return 1
+      else if (b.visits[0].status === "open" && a.visits[0].status === "open") return b.visits[0].openedAt.getTime() - a.visits[0].openedAt.getTime()
+      else if (a.visits[0].status === "open") return -1
+      else if (b.visits[0].status === "open") return 1
+      else return b.visits[0].closedAt.getTime() - a.visits[0].closedAt.getTime()
     })
 
     return ["window", ...windows, "page", ...visits];
   }
-
-  // if (query.startsWith(lastSearch) && lastSearch.length > 4 && lastCommands.length < 10 && false) {
-
-  //   console.log("Using root cache")
-  //   const grouped = await makeSearch(query, [...lastCommands], additionalHighlightQuery)
-
-  //   lastSearch = query;
-  //   //@ts-ignore
-  //   lastCommands = grouped.filter(x => typeof x !== "string" && !x.isInline) as any as WarpspaceCommand[]
-
-  //   return grouped;
-  // } else {
-  //   console.log("Not using root cache")
-
 
   const items = await index.getCandidates(query);
   console.log("Candidates for  " + query, items)
 
   t.mark("Get candidates (" + items.length + ")")
 
-  let visitified: any;
+
+  let enriched: PageSearchActionResult[] = []
 
   await db.transaction("r", db.pages, db.tabs, async t => {
-
-    // TODO filter here
-    visitified = await Promise.all(
+    enriched = await Promise.all(
       items.map(async (i) => {
         const [page] = await db.pages.where("searchId").equals(i.id).toArray();
 
         if (!page) {
           console.error("Couldn't fid page with searchid", i)
-          return [];
+          throw new Error("no page");
         }
 
-        const openVisits = await db.tabs.where("[url+status]").equals([page.url, "open"]).toArray() as OpenVisit[];
+        const visits = await db.tabs.where("url").equals(page.url).toArray() as OpenVisit[];
 
-        console.log("QQQLLL No hits?", { openVisits, query: [page.url, "open"] })
-        if (openVisits.length > 0) {
-          return openVisits.map(v => ({
-            ...i,
-            item: v,
-            type: "visit" as const,
-            page,
-          }))
-        } else return {
+        const result: PageSearchActionResult = {
           ...i,
-          type: page.url.startsWith("file") ? "file" as const : "page" as const,
           item: page,
-          page,
+          type: "page",
+          visits: visits
         }
+        return result
       })
     );
 
@@ -133,49 +152,34 @@ export const search: SearchFunction = async (query: string, additionalHighlightQ
 
   t.mark("Visitify")
 
-  const splitDocs = visitified.flat()
 
   t.mark("Split")
 
-  const commandified: SearchActionResult[] = splitDocs.map((i: any) => {
+  const commandified: SearchActionResult[] = enriched.map((i) => ({
+    ...i,
+
+    perform: async () => {
+      //@ts-ignore
+      await chrome.tabs.create({ url: i.item.url });
+    },
     //@ts-ignore
-    if (i.type === "page") {
-      return {
-        //@ts-ignore
-        ...i,
+    children: i.body.trim() ? makePageSearch(i.item) : undefined,
+  }));
 
-        perform: async () => {
-          //@ts-ignore
-          await chrome.tabs.create({ url: i.item.url });
-        },
-        //@ts-ignore
-        children: i.body.trim() ? makePageSearch(i.item) : undefined,
-      };
-    } else if (i.type === "visit" || i.type === "file") {
-      return {
-        ...i,
-        boost: 1 + (1 - 4 / ((i.page.ranking.typedCount || 0) + 4)) * 0.25,
-
-        perform: async () => {
-          if (i.item.type === "visit")
-            await chrome.tabs.update(i.item.chromeId, { active: true });
-          else await chrome.tabs.create({ url: i.item.url });
-        },
-        children: i.body.trim() ? makePageSearch(i.page) : undefined//makeTabSearch(i.item),
-      };
-    }
-    // else if (i.type === "window") {
-    //   return {
-    //     ...i,
-    //     perform: async () => { },
-    //     children: makeWindowSearch(i.item),
-    //   };
-    // } 
-    throw new Error();
-  });
   t.mark("Commandify")
 
-  const grouped = await makeSearch(query, [...commandified, ...commands], additionalHighlightQuery)
+  const windows = (await db.windows.where("title").notEqual("").toArray())
+  const windowCommands: WindowSearchActionResult[] = windows.map(w => ({
+    type: "window",
+    item: w,
+    title: w.title,
+    body: "",
+    url: "",
+    perform: () => openSavedWindow(w.id),
+    children: makeWindowSearch(w)
+  }))
+
+  const grouped = await makeSearch(query, [...commandified, ...commands, ...windowCommands], additionalHighlightQuery)
   //@ts-ignore
   // lastSearch = query;
   //@ts-ignore
@@ -218,10 +222,6 @@ export async function makeSearch(query: string, options: SearchActionResult[], a
     seenCombos.add(id)
     return true
   })
-
-  //   <img src="https://cdn.osxdaily.com/wp-content/uploads/2021/06/macos-monterey-12-Light-copy.jpeg" style="
-  //     width: 100%;
-  // ">
 
   //@ts-ignore
   const nodups = scored.filter(s => !s.debug.duplicate)
@@ -316,6 +316,7 @@ export async function makeSearch(query: string, options: SearchActionResult[], a
 
   return grouped;
 }
+
 
 
 

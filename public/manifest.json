@@ -5,10 +5,6 @@
   "description": "Chrome Extension, TypeScript, Visual Studio Code",
   "version": "1.0",
 
-  "chrome_url_overrides": {
-    "newtab": "new_tab.html"
-  },
-
   "icons": {
     "48": "logo.png"
   },
@@ -31,6 +27,11 @@
           "run_at": "document_start",
           "js": ["js/content.js"],
           "css": ["content.css"]
+      },
+      {
+          "matches": ["https://warpspace.app/*"],
+          "run_at": "document_start",
+          "js": ["js/restore.js"]
       }
       
   ],

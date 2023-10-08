@@ -9,6 +9,7 @@ import { DeveloperTab } from "./DeveloperTab";
 import { PrivacyTab } from "./PrivacyTab";
 import { StorageTab } from "./StorageTab";
 import { TabLink, TabLinkList, TabLinkPanel, useTabLinkState } from "./TabLink";
+import { useSetting, useUpdateSetting } from "../../hooks/useSetting";
 
 export const SettingsModal: React.FC<{
   open: boolean;
@@ -31,9 +32,8 @@ export const SettingsModalInner: React.FC<{ returnButton?: React.ReactNode }> = 
         path="/"
         element={
           <div className="flex flex-row items-stretch h-full">
-
             <TabLinkList
-              state={tab}
+              as="div"
               className="flex flex-col w-64 border-r border-ramp-200 py-2 select-none"
               aria-label="Groceries"
             >
@@ -85,8 +85,8 @@ export const SettingsModalInner: React.FC<{ returnButton?: React.ReactNode }> = 
             </TabLinkList>
             <div className="flex-1">
               <TabLinkPanel
-                state={tab}
-                tabId={tab.selectedId || undefined}
+                as="div"
+                tabId={undefined}
                 className="py-4 px-6 overflow-scroll h-full"
               >
                 <Outlet />

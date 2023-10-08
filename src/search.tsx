@@ -6,12 +6,14 @@ import { getLiveSettings, WarpspaceSettingsProvider } from "./services/settings/
 import "./styles/prose.css";
 import "./styles/style.css";
 import "./styles/theme.css";
+import toast, { ToastBar, Toaster } from 'react-hot-toast';
 import { usePreviousPersistent } from "./hooks/usePreviousPersistent";
 
 export const SearchApp = () => {
   const { query, visualState } = useKBar(s => ({ visualState: s.visualState }));
 
   const lastVisualState = usePreviousPersistent(visualState)
+
   useEffect(() => {
     if (visualState === VisualState.hidden && lastVisualState === VisualState.animatingOut) {
       window.top!.postMessage(
@@ -26,17 +28,7 @@ export const SearchApp = () => {
   }, [])
 
 
-
-
-  // useEffect(() => {
-  //   let f = () =>
-  //     query.setVisualState(VisualState.animatingOut)
-  //   document.addEventListener("focusout", f)
-  //   return () => document.removeEventListener("focusout", f)
-  // }, [])
-
   return <div>
-
     <KBarPositioner>
       <SearchBarModal />
     </KBarPositioner>

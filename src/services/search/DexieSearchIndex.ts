@@ -11,7 +11,6 @@ export interface SearchDoc {
   title: string;
   url: string;
   body: string;
-  type: "page" | "note" | "window";
   id: number;
 }
 
@@ -60,7 +59,6 @@ export class DexieSearchDB extends Dexie {
 export interface ItemSearchMetadata {
   id?: number;
   url: string;
-  type: "page" | "note" | "window";
 }
 
 export interface ItemSearchOptions {
@@ -125,7 +123,6 @@ export class DexieSearchIndex {
       title?: string;
       url?: string;
       body?: string;
-      type?: "page" | "window" | "note";
     }
   ) {
     const t = performance.now();
@@ -184,7 +181,6 @@ export class DexieSearchIndex {
       title: string;
       url: string;
       body: string;
-      type: "page" | "window" | "note";
     }[]
   ) {
     const t = performance.now();
@@ -216,12 +212,7 @@ export class DexieSearchIndex {
     return;
   }
 
-  async getCandidates(
-    query: string,
-    constraints?: {
-      type?: ("page" | "window" | "note")[];
-    }
-  ): Promise<SearchCandidate[]> {
+  async getCandidates(query: string): Promise<SearchCandidate[]> {
     // todo:
 
     // search for each term

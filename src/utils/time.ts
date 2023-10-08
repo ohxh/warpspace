@@ -1,4 +1,4 @@
-export function time_ago(time: Date | number | string) {
+export function humanReadableTimeAgo(time: Date | number | string) {
   switch (typeof time) {
     case "number":
       break;
@@ -43,6 +43,7 @@ export function time_ago(time: Date | number | string) {
   var i = 0,
     format;
   while ((format = time_formats[i++]))
+    //@ts-ignore
     if (seconds < format[0]) {
       if (typeof format[2] == "string") return format[list_choice];
       else

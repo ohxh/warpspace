@@ -10,6 +10,7 @@ module.exports = {
       dev: path.join(srcDir, 'dev.tsx'),
       debug: path.join(srcDir, 'debug.tsx'),
       new_tab: path.join(srcDir, 'new_tab.tsx'),
+      restore: path.join(srcDir, 'restore.tsx'),
       search: path.join(srcDir, 'search.tsx'),
       background: path.join(srcDir, 'background.ts'),
       content: path.join(srcDir, 'content.ts'),

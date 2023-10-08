@@ -119,6 +119,7 @@ export function rank<
   score: number;
   debug: any;
 })[] {
+  console.log("Rank*(), ", { query, values, showHiddenResults, maskedQuery });
   const t0 = performance.now();
   const terms = tokenize(query).map(normalize);
   let maskedTerms = new Set(tokenize(maskedQuery || "").map(normalize));
@@ -128,7 +129,8 @@ export function rank<
     maskedTerms = new Set();
   }
 
-  if (terms.length === 0)
+  if (terms.length === 0) {
+    console.log("no terms: " + query + terms);
     return values.map((v) => ({
       ...v,
       score: 1,
@@ -138,6 +140,7 @@ export function rank<
         threshold: 0,
       },
     }));
+  }
 
   // map from term to next term in query.
   // used to count bigrams
@@ -402,7 +405,8 @@ export function rank<
       maskedQuery +
       "`) in " +
       (performance.now() - t0) +
-      "ms"
+      "ms",
+    res
   );
   return res;
 }

@@ -1,4 +1,5 @@
 import Dexie from "dexie";
+import { useLiveQuery } from "dexie-react-hooks";
 
 /** Metadata for use in ranking an item in search results */
 export interface RankingMetadata {
@@ -75,6 +76,7 @@ export interface BaseVisit {
   openedAt: Date;
   activeAt: Date;
   updatedAt: Date;
+  attachedAt: Date;
 }
 
 export interface OpenVisit extends BaseVisit {
@@ -138,10 +140,25 @@ export class WarpspaceDatabase extends Dexie {
     this.version(1).stores({
       tabs: "++id, &chromeId, chromeWindowId, windowId, [windowId+status], [url+status], activeAt, status, url",
       pages: "&url, &searchId, activeAt, status",
-      windows: "++id, &chromeId, searchId, activeAt, status",
+      windows: "++id, &chromeId, title, searchId, activeAt, status",
       global: "id",
     });
   }
 }
 
 export const db = new WarpspaceDatabase();
+
+export function useLiveValue<T extends TrackedVisit | Page | TrackedWindow>(
+  x: T
+): T {
+  let table: any;
+  if (x.type === "visit") table = db.tabs;
+  else if (x.type === "page") table = db.pages;
+  else if (x.type === "window") table = db.windows;
+
+  const live = useLiveQuery(
+    () => table.get(x.type === "page" ? x.url : x.id),
+    [table, x]
+  );
+  return live ?? x;
+}

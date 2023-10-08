@@ -1,15 +1,11 @@
-import {
-  ChevronRightIcon
-} from "@heroicons/react/24/solid";
-import { MenuButton as BaseMenuButton, MenuButtonArrow, MenuButtonProps, MenuItem as BaseMenuItem, useMenuState } from "ariakit";
 import React, { forwardRef, useState } from "react";
-import { SettingsIcon } from "../../components/primitives/icons/settings";
-import { WarpspaceIcon } from "../../components/primitives/icons/warpspace";
 import {
   DropdownMenu,
-  Menu, MenuItem,
+  MenuItem,
   MenuSeparator
 } from "../../components/primitives/Menu";
+import { SettingsIcon } from "../../components/primitives/icons/settings";
+import { WarpspaceIcon } from "../../components/primitives/icons/warpspace";
 import { SettingsModal } from "../../components/settings/SettingsModal";
 
 export const BrandMenu: React.FC<{}> = ({ }) => {
@@ -43,7 +39,7 @@ export const BrandMenu: React.FC<{}> = ({ }) => {
         </SubMenu>
 
         <MenuItem label="Site option" icon={<TableIcon />} /> */}
-        <FeedbackMenuItem />
+        {/* <FeedbackMenuItem /> */}
         {/* <MenuItem
           label="Storage use"
           description={"12.2mb"}
@@ -77,62 +73,39 @@ export const BrandMenu: React.FC<{}> = ({ }) => {
 };
 
 
-export const FeedbackMenuItem = forwardRef<HTMLDivElement, {}>(
-  (ref) => {
+// export const FeedbackMenuItem = forwardRef<HTMLDivElement, {}>(
+//   (ref) => {
 
-    const [text, setText] = useState("")
+//     const [text, setText] = useState("")
 
-    const menu = useMenuState({});
+//     const menu = useMenuState({});
 
-    // Resets combobox value when menu is closed
-    if (!menu.mounted && text) {
-      setText("")
-    }
+//     // Resets combobox value when menu is closed
+//     if (!menu.mounted && text) {
+//       setText("")
+//     }
 
-    const Feedback = (props: MenuButtonProps) =>
-      <BaseMenuButton
-        {...props}
-        state={menu}
-        className="py-1.5 pl-12 pr-3
-    flex flex-row items-center relative select-none
-    leading-4 text-ramp-900
-    outline-none
-    data-active-item:bg-ramp-100
-    "
-      >
-        Send feedback
-        <MenuButtonArrow className="absolute right-3" >
-          <ChevronRightIcon />
-        </MenuButtonArrow>
-      </BaseMenuButton>;
+//     // const Feedback = (props: MenuButtonProps) =>
+//     //   <BaseMenuButton
+//     //     {...props}
+//     //     state={menu}
+//     //     className="py-1.5 pl-12 pr-3
+//     // flex flex-row items-center relative select-none
+//     // leading-4 text-ramp-900
+//     // outline-none
+//     // data-active-item:bg-ramp-100
+//     // "
+//     //   >
+//     //     Send feedback
+//     //     <MenuButtonArrow className="absolute right-3" >
+//     //       <ChevronRightIcon />
+//     //     </MenuButtonArrow>
+//     //   </BaseMenuButton>;
 
-    return (
-      <>
-        <BaseMenuItem
-          as="div"
-          className={`
-        data-disabled:text-ramp-500 data-disabled:pointer-events-none
-        active:bg-ramp-100 data-active:bg-ramp-100 data-active-item:bg-ramp-100
-        outline-none
-      `}
-        >
-          {/** @ts-ignore */}
-          <Feedback />
-        </BaseMenuItem>
-        <Menu state={menu} wide>
-          <div className="flex flex-col w-full items-stretch antialiased">
-            <textarea className="mx-2 p-2 text-ramp-900 text-sm border border-ramp-200 rounded-md" rows={4} value={text} onChange={e => setText(e.target.value)} />
-            <button
-              className="self-end"
-              onClick={() => {
-                //  submit
-                menu.hideAll()
-              }}
-            >Submit</button>
-          </div>
+//     return (
+//       <>
 
-        </Menu>
-      </>
-    );
-  }
-);
+//       </>
+//     );
+//   }
+// );

@@ -1,7 +1,7 @@
 
 
 import ReactMarkdown from 'react-markdown';
-
+import remarkGfm from 'remark-gfm'
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import { HighlightedCode } from "./syntax-highlighting/highlightedCode";
@@ -10,8 +10,6 @@ import * as React from 'react';
 import { highlightChildren } from './highlightChildren';
 import 'katex/dist/katex.min.css'; // `rehype-katex` does not import the CSS for you
 import { highlight } from 'refractor';
-
-
 
 const fake = /never-mathches-anything/g;
 
@@ -98,10 +96,18 @@ export const VirtualizedPreview: React.FC<{ frags: string[], startIndex: number,
   )
 }
 
+const markdown = `# Table
+
+| Branch  | Commit           |
+| ------- | ---------------- |
+| main    | 0123456789abcdef |
+| staging | fedcba9876543210 |`
+
 const MarkdownLinePreview: React.FC<{ children: string, highlight: boolean, regex: RegExp }> = React.memo(({ children, highlight, regex }) => {
   return <div className={`leading-normal prose prose-display`}>
     <ReactMarkdown
       remarkPlugins={[remarkMath]}
+      //@ts-ignore
       rehypePlugins={[rehypeKatex]}
       components={{
         img: () => <></>,

@@ -86,6 +86,7 @@ module.exports = {
       animation: {
         pulseOnce: "pulseOnce 0.2s ease-out",
         fadeIn: "fadeIn .15s",
+        fadeInSlow: "fadeIn 0.15s linear forwards .2s",
         fadeOut: "fadeOut .15s",
         dialogIn: "dialogIn .07s ease-out",
         dialogOut: "dialogOut .05s ease-in",

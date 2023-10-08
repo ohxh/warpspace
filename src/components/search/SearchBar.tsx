@@ -1,12 +1,12 @@
 import { ArrowLeftIcon, ClockIcon } from "@heroicons/react/20/solid";
 import { KBarResults, KBarSearch, VisualState, useKBar } from "kbar";
 import { useOuterClick } from "kbar/lib/utils";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useContext, useEffect, useRef, useState } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { useSetting } from "../../hooks/useSetting";
-import { BaseSearchActionResult, SearchActionResult } from "../../services/search/results";
-import { search } from "../../services/search/search";
-import { SmartFavicon } from "../primitives/Favicon";
+import { BaseSearchActionResult, PageSearchActionResult, SearchActionResult } from "../../services/search/results";
+import { SearchFunction, rootSearch } from "../../services/search/search";
+import { Favicon, SmartFavicon } from "../primitives/Favicon";
 import { KeyCap } from "../primitives/KeyCap";
 import { WarpspaceIcon } from "../primitives/icons/warpspace";
 import { SettingsModalInner } from "../settings/SettingsModal";
@@ -21,6 +21,13 @@ import { highlightChildren } from "./previews/highlightChildren";
 import { useLiveQuery } from "dexie-react-hooks";
 import { OpenVisit, TrackedWindow, db } from "../../services/database/DatabaseSchema";
 import { CursorIcon } from "../primitives/icons/cursor";
+import { PageSearchPreview } from "./previews/PageSearchPreview";
+import { Toaster, ToastBar } from "react-hot-toast";
+import { appSettingsContext, getLiveSettings } from "../../services/settings/WarpspaceSettingsContext";
+import { humanReadableTimeAgo } from "../../utils/time";
+import { makeSelectionSearch } from "../../services/search/nested/makeSelectionSearch";
+import { WindowSearchPreview } from "./previews/WindowSearchPreview";
+
 
 
 
@@ -186,6 +193,16 @@ export const SearchBarAnimator: React.FC<
   );
 };
 
+export type SelectionContext = {
+  selection: SearchActionResult[],
+  children: SearchFunction,
+  title: "selection",
+  type: "selection",
+  placeholder: string,
+  hidePreviewPanel: boolean,
+  perform?: any,
+}
+
 export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({ subtle }) => {
 
 
@@ -202,22 +219,45 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 
 
 
+  const exclusions = useSetting("privacy.exclusions")
+  const [settings] = useContext(appSettingsContext)
+
   const [lastResolvedQueryText, setLastResolvedQueryText] = useState("");
+  const [lastResolvedExclusions, setLastResolvedExclusions] = useState(exclusions.length);
   const [lastResolvedContext, setLastResolvedContext] = useState(0);
   const [items, setItems] = useState<(string | SearchActionResult)[]>([])
-  const [context, setContext] = useState<(SearchActionResult)[]>([])
+  const [context, setContext] = useState<(SearchActionResult | SelectionContext)[]>([])
+  const [selection, setSelection] = useState<(SearchActionResult)[]>([])
   const [loading, setLoading] = useState(false)
   const searchedOnce = useRef(false)
+
+
+  let searcher = context[context.length - 1] ? context[context.length - 1].children : rootSearch
+
+  useEffect(() => {
+    const t0 = performance.now()
+    searcher!(queryText).then((t: any) => {
+      console.log(`Searched for "${queryText}" in ${performance.now() - t0}ms and got ${t?.length} results:`, t)
+      console.log("Exlusions", exclusions)
+      const tt = t.filter((x: any) => !exclusions.includes(x.url))
+      setItems(tt ?? [])
+      setLastResolvedQueryText(queryText)
+      setLastResolvedContext(context.length)
+      setLastResolvedExclusions(exclusions.length)
+      setLoading(false)
+      setTime(performance.now() - t0)
+    })
+  }, [])
 
   let [time, setTime] = useState(0);
 
   useEffect(() => {
-    if (queryText === lastResolvedQueryText && context.length == lastResolvedContext) return;
-    if (queryText === lastResolvedQueryText && queryText !== "") return;
+    if (queryText === lastResolvedQueryText && context.length == lastResolvedContext && exclusions.length === lastResolvedExclusions) return;
+    // if (queryText === lastResolvedQueryText && queryText !== "") return;
     if (loading) return;
 
     console.log("useEffect", queryText, lastResolvedQueryText)
-    let searcher = context[context.length - 1] ? context[context.length - 1].children : search
+    let searcher = context[context.length - 1] ? context[context.length - 1].children : rootSearch
 
     setLoading(true);
     if (!searcher) {
@@ -229,18 +269,19 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 
       searcher!(queryText).then((t: any) => {
         console.log(`Searched for "${queryText}" in ${performance.now() - t0}ms and got ${t?.length} results:`, t)
-        setItems(t ?? [])
+        console.log("Exlusions", exclusions)
+        const tt = t.filter((x: any) => !exclusions.includes(x.url))
+        setItems(tt ?? [])
         setLastResolvedQueryText(queryText)
         setLastResolvedContext(context.length)
+        setLastResolvedExclusions(exclusions.length)
         setLoading(false)
         setTime(performance.now() - t0)
       })
     }
-
-  }, [queryText, lastResolvedQueryText, context, lastResolvedContext, setItems, loading])
+  }, [queryText, lastResolvedQueryText, context, lastResolvedContext, setItems, loading, exclusions])
 
   const settingsOpen = context[0]?.title === "Settings"
-
 
   const showDebug = useSetting("developer.showSearchRankingReasons");
 
@@ -251,6 +292,69 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
     previewScrollRef.current?.scrollTo({ top: 0 })
   }, [activeIndex, query])
 
+
+  // Callbacks: 
+
+  const open = useCallback(async () => {
+    setLoading(true)
+
+    const current = items[activeIndex] as SearchActionResult
+
+    let result = await current.perform!();
+    if (result) {
+      setContext(result)
+      query.setActiveIndex(0)
+      query.setSearch("")
+      setLoading(false)
+    } else {
+      window.top!.postMessage(
+        { event: "exit-search" },
+        { targetOrigin: "*" }
+      );
+    }
+  }, [items, activeIndex, setContext, query,])
+
+  const popContext = useCallback(() => {
+    if (context.length > 0) {
+      setContext(context.slice(0, -1))
+    } else {
+      setSelection([])
+    }
+  }, [context, setContext, setSelection])
+
+  const pushContext = useCallback(() => {
+    let current = items[activeIndex] as SearchActionResult;
+    const t0 = performance.now()
+    setLoading(true)
+
+    current.children!("").then((t: any) => {
+      setItems(t ?? [])
+      query.setSearch("");
+      setLastResolvedQueryText("")
+      setLastResolvedContext(context.length + 1)
+      setContext([...context, current as SearchActionResult])
+
+      setTimeout(() => {
+        setLoading(false)
+      }, 1)
+
+      setTime(performance.now() - t0)
+    });
+  }, [setTime, setLastResolvedContext, setLastResolvedQueryText, setContext, setLoading, items, activeIndex])
+
+  const pushSelectionToContext = useCallback(() => {
+
+  }, [])
+
+  const toggleSelection = useCallback(() => {
+    let current = items[activeIndex] as SearchActionResult
+    if (selection.some(c => c.id === current.id)) {
+      setSelection(selection.filter(c => c.id !== current.id))
+    } else {
+      setSelection(c => [...c, items[activeIndex] as SearchActionResult])
+    }
+  }, [items, activeIndex, setSelection, selection])
+
   return <SearchBarAnimator
     root={context[context.length - 1]}
     style={{
@@ -259,7 +363,27 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
       maxWidth: useSetting("appearance.width") === "wide" ? "72rem" : "56rem"
     }}
     className={`w-full bg-ramp-0 dark:bg-ramp-100 ring-1 ring-black/5 dark:ring-0 dark:border border-ramp-200 ${!subtle && useSetting("appearance.position") === "top" ? "rounded-b-md" : "rounded-md"} ${subtle ? "shadow-lg" : "shadow-2xl"} overflow-hidden`}>
-    {settingsOpen && <div>
+    <Toaster
+      toastOptions={{
+        className: "bg-black/80 text-white rounded-md p-2"
+      }}
+      position="bottom-center"
+
+    >
+      {(t) => (
+
+        <ToastBar
+          toast={t}
+          style={{
+            ...t.style,
+            animation: t.visible ? 'fadeIn .15s forwards' : 'fadeOut .15s forwards',
+          }}
+        />
+
+      )}
+    </Toaster>
+
+    {settingsOpen && <div className="h-[448px]">
       <MemoryRouter><SettingsModalInner returnButton={
         <button onClick={() => setContext([])} className="px-4 py-1.5 text-left hover:bg-ramp-100 dark:hover:bg-ramp-200 bg-ramp-0 dark:bg-ramp-100 relative pl-10 flex flex-row items-center">
           <ArrowLeftIcon className="w-4 h-4 absolute left-3" />
@@ -268,72 +392,75 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
       } /></MemoryRouter>
     </div>}
     <div className="relative flex flex-row items-center px-4 gap-x-2" style={{ display: settingsOpen ? "none" : "" }}>
+
+
       {context.map(c => <SearchContextChip item={c} key={c.title} />)}
+      {!!selection.length && <div className="bg-highlightFaint rounded-md px-2 py-1 flex flex-row gap-x-3">
+        {selection.slice(0, 5).map((s, i) => <Favicon url={s?.url || ""} />)}
+        {selection.length == 1 && <>1 tab</>}
+        {selection.length > 1 && <>{selection.length} tabs</>}
+      </div>}
       <KBarSearch
         defaultPlaceholder={context[context.length - 1]?.placeholder}
         className="flex-1 text-base text-ramp-900 py-3 w-full outline-none"
         onKeyDown={async e => {
+          const current = items[activeIndex] as SearchActionResult
+
           if (e.key === "Backspace" && (e.target as HTMLInputElement).value.length === 0) {
-            // Pop a context item on backspacing with no text
-            setContext(context.slice(0, -1))
+            popContext()
           } else if (e.key === "Tab") {
             // Push the highlighted result on to the context if possible
             e.preventDefault()
-            let current = items[activeIndex];
+            e.stopPropagation()
 
-            if (typeof current !== "string" && current.children) {
-              // alert("searching..")
-              const t0 = performance.now()
-              setLoading(true)
+            // If shift-tab or tab on selected
+            if (selection.length > 0 && e.shiftKey || selection.some(c => c.id === current.id)) {
+              setContext([...context, {
+                type: "selection",
+                children: makeSelectionSearch(selection as PageSearchActionResult[]),
+                hidePreviewPanel: false,
+                placeholder: `Search actions for selection`,
+                selection: selection,
+                title: "selection",
+              }])
+              setSelection([])
+              query.setSearch("");
 
-              current.children!("").then((t: any) => {
-                setItems(t ?? [])
-                query.setSearch("");
-                setLastResolvedQueryText("")
-                setLastResolvedContext(context.length + 1)
-                setContext([...context, current as SearchActionResult])
-
-                setTimeout(() => {
-                  setLoading(false)
-                }, 1)
-
-                setTime(performance.now() - t0)
-              });
+              return
             }
 
+            if (typeof current !== "string" && current.children) {
+              pushContext()
+            }
           } else if (e.key === "Enter") {
             e.preventDefault()
-            let current = items[activeIndex];
+            e.stopPropagation()
+
+            if (e.shiftKey && typeof items[activeIndex] === "object") {
+              toggleSelection()
+              return
+            }
 
             // If the highlighted result has an action, do it and reset state
             if (typeof current !== "string" && current.perform) {
-              setLoading(true)
-              let result = await current.perform();
-              window.top!.postMessage(
-                { event: "exit-search" },
-                { targetOrigin: "*" }
-              );
-
-              query.setActiveIndex(0)
-
-              query.setSearch("")
-              setContext([])
+              open()
             } else if (typeof current !== "string" && current.children) {
               // Otherwise, try to push the highlighted result to the context
               // This gives natural behavior if the user hits enter instead of tab
-              const t0 = performance.now()
-              current.children!("").then((t: any) => {
-                setLoading(true)
-                setItems(t ?? [])
-                setLastResolvedQueryText("")
-                setLastResolvedContext(context.length)
-                query.setActiveIndex(0)
+              pushContext()
+              // const t0 = performance.now()
+              // current.children!("").then((t: any) => {
+              //   setLoading(true)
+              //   setItems(t ?? [])
+              //   setLastResolvedQueryText("")
+              //   setLastResolvedContext(context.length)
+              //   query.setActiveIndex(0)
 
-                setContext([...context, current as SearchActionResult])
-                query.setSearch("");
-                setLoading(false)
-                setTime(performance.now() - t0)
-              });
+              //   setContext([...context, current as SearchActionResult])
+              //   query.setSearch("");
+              //   setLoading(false)
+              //   setTime(performance.now() - t0)
+              // });
             }
           }
         }}
@@ -343,13 +470,11 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
         <WarpspaceIcon className={loading ? "animate-pulse" : ""} />
       </div>
     </div>
-    <div className="w-full px-4 pt-0 flex flex-row gap-x-2 items-center transition-[height] min-h-0 overflow-hidden" style={{ height: (searchedOnce.current) ? "3em" : "0px" }}>
-      <div className="flex-1 text-left"><KeyCap>↑</KeyCap> <KeyCap>↓</KeyCap> to select, <KeyCap>?</KeyCap> for help</div>
+    <div className="w-full px-4 pt-0 flex flex-row gap-x-2 items-center transition-[height] min-h-0 overflow-hidden" style={{ height: (context.length === 0) ? "3em" : "0px" }}>
+      <div className="flex-1 text-left"><KeyCap>↑</KeyCap> <KeyCap>↓</KeyCap> to focus, <KeyCap>?</KeyCap> for help</div>
       <SortOrderDropdown sortOrder="relevance" setSortOrder={() => { }} />
       <DateVisitedDropdown />
       <ItemTypeDropdown />
-
-      {activeIndex}
     </div>
     {/* <SearchHelpBar /> */}
     {/* 
@@ -368,22 +493,46 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
               {/* <div className="text-xs text-ramp-500 absolute right-4 top-2">
                 {items.length} results in {time.toFixed(2)}ms
               </div> */}
-
               <RenderResults
                 effectiveQuery={lastResolvedContext}
                 effectiveContext={lastResolvedQueryText}
-                items={items} />
+                items={items}
+                selection={selection}
+                toggleSelection={toggleSelection}
+                pushContext={pushContext}
+                setContext={setContext}
+              />
             </div>
             {items[activeIndex] && !(context.length && context[context.length - 1].hidePreviewPanel) &&
               <div className="self-stretch flex-[3] min-w-0  pb-10 border-l border-ramp-200 relative max-h-[400px] h-[400px]">
                 {/* <ScoreExplanation item={items[activeIndex] as ActionableRankedResult} /> */}
-
                 <div className="overflow-y-scroll absolute inset-0 pb-16" ref={previewScrollRef}>
                   <SearchPreview result={items[activeIndex] as SearchActionResult} key="preview" />
                 </div>
-                <div className="overflow-hidden whitespace-nowrap text-ramp-700 text-sm p-4 pt-10 pb-3 bg-gradient-to-b from-transparent via-ramp-0 to-ramp-0 dark:via-ramp-100 dark:to-ramp-100 absolute bottom-0 left-0 right-0">
-                  <KeyCap>Enter</KeyCap> to open
-                  {(items[activeIndex] as any)?.children && <>, <KeyCap>Tab</KeyCap> to search within</>}</div>
+
+                <div className="overflow-hidden whitespace-nowrap text-ramp-700 text-sm p-4 pt-10 pb-3 bg-gradient-to-b from-transparent via-ramp-0 to-ramp-0 dark:via-ramp-100 dark:to-ramp-100 absolute bottom-0 left-0 right-0 flex flex-col gap-y-1">
+                  {/* <div>
+                    <KeyCap>Shift</KeyCap><KeyCap>Enter</KeyCap> to select,
+                  </div> */}
+                  <div className="flex flex-col items-start gap-y-2">
+                    {/* @ts-ignore */}
+                    {/* {selection.length > 0 && !selection.some(s => s.id === items[activeIndex].id) &&
+                      <><KeyCap>Enter</KeyCap> to select, <KeyCap>Tab</KeyCap> to see selection actions
+                      </>} */}
+
+
+                    {/* @ts-ignore */}
+                    {
+                      <div>
+                        <KeyCap>Enter</KeyCap> to open
+                        {(items[activeIndex] as any)?.children && <>, <KeyCap>Tab</KeyCap> to search within</>}
+                      </div>}
+                    {/* @ts-ignore */}
+                    {selection.length > 0 && selection.some(s => s.id === items[activeIndex].id) &&
+                      <div className="bg-highlightFaint  pl-1 -ml-1 px-2 py-1 -mx-2 -my-1 rounded"><KeyCap>Shift</KeyCap><KeyCap>Enter</KeyCap> to deselect, <KeyCap>Shift</KeyCap><KeyCap>Tab</KeyCap> to see actions
+                      </div>}
+                  </div>
+                </div>
 
                 {/* @ts-ignore */}
                 {showDebug && items[activeIndex].debug &&
@@ -427,22 +576,29 @@ export const SearchBarModal: React.FC<{ open?: boolean; subtle?: boolean }> = ({
 }
 
 
-const RenderResults = React.memo(RenderResultsInner, (prev, next) => prev.effectiveContext == next.effectiveContext && prev.effectiveQuery === next.effectiveQuery)
-function RenderResultsInner(props: { items: any[], effectiveQuery: any, effectiveContext: any }) {
-  console.warn("RenderResults()", props.effectiveContext, props.effectiveQuery)
+const RenderResults = RenderResultsInner
+function RenderResultsInner(props: { items: any[], effectiveQuery: any, effectiveContext: any, selection: any, toggleSelection: any, pushContext: any, setContext: any }) {
+
   return (
     <KBarResults
       items={props.items}
       onRender={({ item, active }: any) =>
-        <div onClick={async () => {
-
-          await item.perform()
-
+        <div onClick={async (e) => {
+          if (e.shiftKey || e.metaKey || e.ctrlKey) {
+            e.stopPropagation()
+            e.preventDefault()
+            props.toggleSelection()
+          } else if (item.perform) {
+            const newContext = await item.perform()
+            props.setContext(newContext)
+          } else if (item.children) {
+            props.pushContext()
+          }
         }}>{
             typeof item === "string" ?
               <SearchSectionHeading title={item} />
               :
-              <SearchResult item={item} active={active} />
+              <SearchResult item={item} active={active} selected={props.selection.some((s: any) => s.id === item.id)} />
           }
         </div>
       }
@@ -466,75 +622,7 @@ const SearchPreview: React.FC<{ result?: SearchActionResult }> = ({ result }) =>
 
   </>
 
-  if (result.type === "page" || result.type === "visit") return <div className="px-4 py-4">
-    <TabPreview tab={result.item} />
-    <div className="space-y-1 flex-1 min-w-0 mt-2">
-      <div className="flex flex-row gap-x-2 items-center px-[0.125rem] ">
-        <h2 className={`text-base text-ramp-900 overflow-ellipsis ${result.title?.includes(" ") ? "break-words" : "break-all"}`}>
-          <div className="float-left mt-[0.1875rem] align-middle w-[1.125rem] h-[1.125rem] rounded-sm leading-none mr-2" ><SmartFavicon item={result.item} /></div>
-          {highlightChildren(result.title, result.debug.regex)}
-        </h2>
-
-      </div>
-      <p className="text-xs text-ramp-500 break-all max-lines-3 overflow-clip">
-        {highlightChildren(result.url, result.debug.regex)}
-      </p>
-
-      <div className="flex flex-col my-4 gap-y-1">
-
-        <div className="text-xs flex flex-row items-baseline">
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
-          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
-          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
-        </div>
-        <div className="text-xs flex flex-row items-baseline">
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
-          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
-          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
-        </div>
-        <div className="text-xs flex flex-row items-baseline">
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
-          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
-          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
-        </div>
-        <div className="text-xs flex flex-row items-baseline">
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
-          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
-          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
-        </div>
-        <div className="text-xs flex flex-row items-baseline">
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
-          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
-          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
-        </div>
-        <div className="text-xs flex flex-row items-baseline">
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId !== currentTabId && <div className="inline bg-highlightFaint px-1.5 py-0.5 rounded-sm text-xs text-ramp-800 mr-1"><div className="w-1.5 h-1.5 bg-focus rounded-full inline-block align-[10%] mr-1" /> Open now</div>}
-          {result.type === "visit" && result.item.status === "open" && result.item.chromeId == currentTabId && <div className="inline bg-highlightFaint px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <CursorIcon className=" w-3 h-3  text-focus inline align-baseline mr-1" /> Current tab </div>}
-          {(result.type === "visit" && result.item.status === "closed" || result.type === "page") && <div className="inline  px-2 py-1 rounded-sm text-xs  text-ramp-800 mr-1"> <ClockIcon className=" w-3 h-3 text-ramp-900 inline align-baseline mr-1" /> open 10m ago</div>}
-          in <a className="font-medium border-b border-dashed ml-1">My Window (15 tabs)</a>
-        </div>
-      </div>
-
-
-      {/* <div className="pt-4 text-xs flex flex-col">
-        {result.type === "visit" && <p className="flex flex-row items-center gap-x-2">
-          <div className="rounded-full bg-focus w-1.5 h-1.5 align-middle inline-block"></div><span>Open tab</span>
-        </p>}
-        {result.type === "page" && <p>
-          Last open 2 days ago
-        </p>}
-        {result.type === "page" && <p>
-          Open in 5 windows
-        </p>}
-      </div> */}
-
-    </div>
-  </div >
+  if (result.type === "page") return <PageSearchPreview result={result} />
 
 
   if (result.type === "content") return <>
@@ -546,7 +634,7 @@ const SearchPreview: React.FC<{ result?: SearchActionResult }> = ({ result }) =>
 
   if (result.type === "window") return <div className="px-4 py-4">
 
-    <SuggestionResult3 space={result.item} />
+    <WindowSearchPreview space={result.item} />
   </div>
 
   return <>  </>
@@ -567,51 +655,3 @@ const VirtualizedPreviewLazy: React.FC<{ frags: string[], startIndex: number, re
   return LazyComponent ? <LazyComponent frags={frags} startIndex={startIndex} regex={regex} /> : <></>
 }
 
-
-export const SuggestionResult3: React.FC<{ space: TrackedWindow, }> = ({ space, }) => {
-
-  const tabs2 = useLiveQuery(
-    space.status === "open" ?
-      () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "open").toArray() as Promise<OpenVisit[]>
-      : () => db.tabs.where("windowId").equals(space.id!).and(x => x.status === "closed" && x.closingReason === "window-closed").toArray() as Promise<OpenVisit[]>)
-
-  const tabs = tabs2 ? [...tabs2.filter(t => t.metadata.previewImage), ...tabs2.filter(t => !t.metadata.previewImage)] : [];
-
-  return <>
-    <div className="relative z-10">
-      {tabs[0] &&
-        <TabPreview tab={tabs[0]} />}
-      {tabs.slice(1).map((t, i) => <div className={`absolute top-0 left-0 w-[16em] origin-center hover:z-10 hover:scale-100 transition-all`} style={{ transform: `translateX(${[32, 58, 86, 110][i]}px) scale(${[95, 89, 83, 76][i]}%)`, zIndex: -(i + 1) }}>
-        <TabPreview tab={t} />
-      </div>)}
-    </div>
-
-    <div className="space-y-1 flex-1 min-w-0 mt-2">
-      <div className="flex flex-row gap-x-2 items-center px-[0.125rem] ">
-        {space.title && <h2 className={`text-base text-ramp-900 overflow-ellipsis ${space.title?.includes(" ") ? "break-words" : "break-all"}`}>
-          {space.title}
-        </h2>}
-        {!space.title && <h2 className={`text-base text-ramp-500 overflow-ellipsis ${space.title?.includes(" ") ? "break-words" : "break-all"}`}>
-          Untitled Space
-        </h2>}
-
-      </div>
-      <p className="text-xs text-ramp-500 break-all max-lines-3 overflow-hidden">
-        hiii
-      </p>
-      {/* <div className="pt-4 text-xs flex flex-col">
-      {result.type === "visit" && <p className="flex flex-row items-center gap-x-2">
-        <div className="rounded-full bg-focus w-1.5 h-1.5 align-middle inline-block"></div><span>Open tab</span>
-      </p>}
-      {result.type === "page" && <p>
-        Last open 2 days ago
-      </p>}
-      {result.type === "page" && <p>
-        Open in 5 windows
-      </p>}
-    </div> */}
-
-    </div>
-
-  </>
-}

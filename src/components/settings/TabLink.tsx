@@ -3,9 +3,9 @@ import {
   TabList,
   TabPanel,
   TabProps,
-  TabStateProps,
-  useTabState
-} from "ariakit/tab";
+  TabStoreProps,
+  useTabStore,
+} from "@ariakit/react";
 import React from "react";
 import {
   useHref,
@@ -27,11 +27,11 @@ export function TabLink({ to, icon, label, ...props }: TabLinkProps) {
   </Tab>
 }
 
-export function useTabLinkState(props: TabStateProps = {}) {
+export function useTabLinkState(props: TabStoreProps = {}) {
   const { pathname: selectedId } = useLocation();
   const navigate = useNavigate();
 
-  const tab = useTabState({
+  const tab = useTabStore({
     ...props,
     selectedId,
     setSelectedId: (id) => {

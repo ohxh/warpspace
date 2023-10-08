@@ -133,7 +133,6 @@ const writeTabThroughToPages = async (x: Omit<TrackedVisit, "id">) => {
     index.index(searchId, {
       title: x.metadata.title,
       url,
-      type: "page",
     });
   }
 };
@@ -214,6 +213,11 @@ const newTabOpen = async (chromeId: number) => {
 const addTab = async (tab: chrome.tabs.Tab, instant?: boolean) => {
   if (!instant) await initialized;
 
+  if (tab.url?.startsWith("https://warpspace.app/restore")) {
+    console.log("QQQ found restore tab! ", tab);
+    return;
+  }
+
   const t = performance.now();
 
   await db
@@ -282,6 +286,7 @@ const addTab = async (tab: chrome.tabs.Tab, instant?: boolean) => {
         openedAt: new Date(),
         activeAt: new Date(),
         updatedAt: new Date(),
+        attachedAt: new Date(),
       };
 
       if (!newTab.url) {
@@ -313,6 +318,63 @@ const updateTab = async (
 ) => {
   await initialized;
   const t = performance.now();
+
+  if (changeInfo.url?.startsWith("https://warpspace.app/restore")) {
+    const urlParams = new URL(changeInfo.url).searchParams;
+    const restoreid = Number(urlParams.get("id")!);
+
+    const oldtab = await db.tabs.get(restoreid);
+
+    console.log(
+      "QQQ found restore update tab!",
+      tab,
+      changeInfo,
+      restoreid,
+      oldtab
+    );
+
+    await db.transaction("rw", db.tabs, db.windows, db.pages, async (t) => {
+      // Forget the tab
+      const currentWindow = await db.windows
+        .where("chromeId")
+        .equals(tab.windowId)
+        .first();
+      const restoredTab = await db.tabs.get(restoreid);
+      const restoredWindow = await db.windows.get(restoredTab?.windowId!);
+
+      console.log("Restoring tab", restoredTab);
+      // If window was made in the last second, then delete it and swap too
+      if (
+        currentWindow &&
+        currentWindow.createdAt.getTime() > Date.now() - 1000
+      ) {
+        console.log("Restoring window", restoredWindow);
+        await db.windows.delete(currentWindow.id);
+        await db.windows.update(restoredWindow?.id!, {
+          status: "open",
+          chromeId: tab.windowId,
+        });
+      }
+
+      await db.tabs.where("chromeId").equals(id).delete();
+      await db.tabs.update(restoreid, {
+        status: "open",
+        chromeId: id,
+      });
+    });
+    // TODO
+    // delete last visit
+    // merge last visit
+
+    console.log("QQQ update", id, {
+      url: oldtab!.url,
+    });
+    await chrome.tabs.update(id, {
+      url: oldtab!.url,
+    });
+
+    return;
+  }
 
   await db
     .transaction("rw", db.tabs, db.windows, db.pages, async (t) => {
@@ -370,6 +432,7 @@ const updateTab = async (
             activeAt: new Date(),
             closedAt: new Date(),
             updatedAt: new Date(),
+            attachedAt: new Date(),
           };
 
           // Overwrite old active visit
@@ -531,6 +594,7 @@ const removeTab = async (id: number, removeInfo: chrome.tabs.TabRemoveInfo) => {
             closedAt: new Date(),
             activeAt: new Date(),
             updatedAt: new Date(),
+            attachedAt: new Date(),
           };
 
           await db.tabs.put(suspendingTab);
@@ -552,6 +616,7 @@ const removeTab = async (id: number, removeInfo: chrome.tabs.TabRemoveInfo) => {
             activeAt: new Date(),
             closedAt: new Date(),
             updatedAt: new Date(),
+            attachedAt: new Date(),
           };
 
           await db.tabs.put(closingTab);
@@ -603,6 +668,7 @@ const attachTab = async (id: number, attachInfo: chrome.tabs.TabAttachInfo) => {
         db.tabs.update(t.id, {
           position: t.position,
           updatedAt: new Date(),
+          attachedAt: t.id === storedTab.id ? new Date() : t.attachedAt,
         });
       });
 
@@ -657,6 +723,12 @@ const activateTab = async (activeInfo: chrome.tabs.TabActiveInfo) => {
 
 const addWindow = async (window: chrome.windows.Window, instant?: boolean) => {
   if (!instant) await initialized;
+
+  if (window.tabs?.[0].url?.startsWith("https://warpspace.app/restore")) {
+    console.log("QQQ found restore window! ", window);
+    return;
+  }
+
   const t = performance.now();
 
   const newWindow: Omit<TrackedWindow, "id"> = {
@@ -941,6 +1013,7 @@ export async function initializeTabStore() {
               windowId: v.windowId,
               id: v.id,
               updatedAt: new Date(),
+              attachedAt: new Date(),
             };
             await db.tabs.put(cl);
           }),
