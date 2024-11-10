@@ -1,5 +1,7 @@
 # Warpspace Chrome Extension
 
+This is a Chrome extension  I
+
 ## Commands
 
 # Default
@@ -7,6 +9,10 @@
 - New tab
 - New window
 - ... commands from window context
+
+
+![Video](https://github.com/user-attachments/assets/6b566fe8-bba9-4aab-a486-2dc970427d61)
+
 
 # Tab
 
